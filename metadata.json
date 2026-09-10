@@ -1,0 +1,6 @@
+{
+  "name": "MutuaMente Psicologia",
+  "description": "Plataforma moderna para consultas de psicologia e psicoterapia, com agendamento intuitivo, pagamentos integrados (MB WAY, Multibanco, Cartão), notificações automáticas e dashboard clínico.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
