@@ -65,8 +65,24 @@ function aistudioMediaPlugin(): Plugin {
 // LINT.ThenChange(//depot/google3/java/com/google/alkali/boq/makersuite/applet_dev_service/templates/initializers/react_theme/vite.config.ts:aistudio_media_plugin)
 
 export default defineConfig(() => {
+  // In GitHub Actions, GITHUB_REPOSITORY is automatically set to "owner/repo"
+  // For GitHub project pages (username.github.io/repo), Vite requires base: "/repo/"
+  // For user/org pages (username.github.io) or custom domains, base is "/"
+  const getBase = () => {
+    if (process.env.VITE_BASE) return process.env.VITE_BASE;
+    const githubRepo = process.env.GITHUB_REPOSITORY;
+    if (githubRepo) {
+      const repoName = githubRepo.split('/')[1];
+      if (repoName && !repoName.toLowerCase().endsWith('.github.io')) {
+        return `/${repoName}/`;
+      }
+      return '/';
+    }
+    return './';
+  };
+
   return {
-    base: './',
+    base: getBase(),
     plugins: [react(), tailwindcss(), aistudioMediaPlugin()],
     resolve: {
       alias: {
