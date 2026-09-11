@@ -698,6 +698,9 @@ export const ClinicalDashboard: React.FC = () => {
                           src={sp.photoUrl}
                           alt={sp.name}
                           className="w-10 h-10 rounded-full object-cover shrink-0 border border-stone-200"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://usr-cdn.zaask.pt/users/067bf29c16c79c3f951f72f764e2bbdbdfbfab97';
+                          }}
                         />
                         <div>
                           <h4 className="text-xs font-bold text-stone-900">{sp.name}</h4>

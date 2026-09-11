@@ -27,21 +27,21 @@ export const Footer: React.FC = () => {
           {/* Col 1: Brand & Purpose (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-white border-2 border-[#E8D5A0] text-[#2A6496] flex items-center justify-center shrink-0 shadow-xs">
-                <MutuaMenteSymbol className="w-7 h-7 text-[#2A6496]" />
+              <div className="w-11 h-11 rounded-full bg-white border-2 border-[#E5B468]/60 text-[#CD8E33] flex items-center justify-center shrink-0 shadow-xs">
+                <MutuaMenteSymbol className="w-7 h-7 text-[#CD8E33]" color="#CD8E33" />
               </div>
               <div>
-                <span className="font-serif-display text-2xl font-bold text-white tracking-tight">
-                  Mutua<span className="text-[#C9A84C]">Mente</span>
+                <span className="font-serif-display text-2xl font-normal text-white tracking-tight">
+                  Mutua<span className="text-[#CD8E33]">Mente</span>
                 </span>
-                <span className="text-[10px] text-[#E8D5A0] block uppercase tracking-wider font-semibold">
+                <span className="text-[10px] text-[#CD8E33] block uppercase tracking-wider font-semibold">
                   Psicologia Clínica & Psicoterapia
                 </span>
               </div>
             </div>
 
             <p className="text-xs text-stone-400 leading-relaxed max-w-sm">
-              Espaço clínico fundado pela Dra. Sofia Godinho Cabrita dedicado à intervenção psicológica humanista e baseada em evidência científica, presencialmente em Lisboa e online.
+              Espaço de psicologia que nasce da paixão pelas pessoas. A nossa visão é aliar conhecimentos de diferentes áreas para tornar a intervenção psicológica simples, acessível e prioritária.
             </p>
 
             <div className="text-[11px] text-stone-500 space-y-1">
@@ -54,7 +54,7 @@ export const Footer: React.FC = () => {
                 href={CLINIC_INFO.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-stone-900 hover:bg-[#2A6496] text-stone-400 hover:text-white flex items-center justify-center transition border border-stone-800"
+                className="w-8 h-8 rounded-lg bg-stone-900 hover:bg-[#CD8E33] text-stone-400 hover:text-white flex items-center justify-center transition border border-stone-800"
                 title="Instagram"
               >
                 <Instagram className="w-4 h-4" />
@@ -63,7 +63,7 @@ export const Footer: React.FC = () => {
                 href={CLINIC_INFO.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-lg bg-stone-900 hover:bg-[#2A6496] text-stone-400 hover:text-white flex items-center justify-center transition border border-stone-800"
+                className="w-8 h-8 rounded-lg bg-stone-900 hover:bg-[#CD8E33] text-stone-400 hover:text-white flex items-center justify-center transition border border-stone-800"
                 title="LinkedIn"
               >
                 <Linkedin className="w-4 h-4" />
@@ -73,23 +73,24 @@ export const Footer: React.FC = () => {
 
           {/* Col 2: Services & Quick Links (3 cols) */}
           <div className="lg:col-span-3 space-y-3 text-xs">
-            <h4 className="font-bold text-[#E8D5A0] uppercase tracking-wider text-[11px]">
-              Especialidades Clínicas
+            <h4 className="font-bold text-[#CD8E33] uppercase tracking-wider text-[11px]">
+              Serviços & Protocolos
             </h4>
             <ul className="space-y-2 text-stone-400">
-              <li><a href="#servicos" className="hover:text-[#C9A84C] transition">Psicoterapia Individual (Adultos)</a></li>
-              <li><a href="#servicos" className="hover:text-[#C9A84C] transition">Terapia de Casal e Familiar</a></li>
-              <li><a href="#servicos" className="hover:text-[#C9A84C] transition">Consultas Online (Telepsicologia)</a></li>
-              <li><a href="#servicos" className="hover:text-[#C9A84C] transition">Orientação Vocacional & Carreira</a></li>
-              <li><a href="#servicos" className="hover:text-[#C9A84C] transition">Avaliação Psicológica e Cognitiva</a></li>
+              <li><a href="#servicos" className="hover:text-[#CD8E33] transition">Consulta de Psicologia Clínica</a></li>
+              <li><a href="#servicos" className="hover:text-[#CD8E33] transition">Avaliação Psicológica</a></li>
+              <li><a href="#servicos" className="hover:text-[#CD8E33] transition">Consultoria de Recursos Humanos</a></li>
+              <li><a href="#acordos-precos" className="hover:text-[#CD8E33] transition">Acordos / Allianz (10% Desc.)</a></li>
+              <li><a href="#quando-procurar" className="hover:text-[#CD8E33] transition">Quando Procurar Psicólogo?</a></li>
+              <li><a href="#sobre" className="hover:text-[#CD8E33] transition">Sobre o MutuaMente</a></li>
             </ul>
 
             <div className="pt-2">
               <button
                 onClick={() => setIsDashboardOpen(true)}
-                className="inline-flex items-center gap-1.5 text-stone-400 hover:text-[#C9A84C] transition text-[11px] font-semibold cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-stone-400 hover:text-[#CD8E33] transition text-[11px] font-semibold cursor-pointer"
               >
-                <Lock className="w-3.5 h-3.5 text-[#C9A84C]" />
+                <Lock className="w-3.5 h-3.5 text-[#CD8E33]" />
                 <span>Área Clínica Reservada (Dra. Sofia)</span>
               </button>
             </div>
@@ -97,13 +98,13 @@ export const Footer: React.FC = () => {
 
           {/* Col 3: Contacts & Address (5 cols) */}
           <div className="lg:col-span-5 space-y-3 text-xs">
-            <h4 className="font-bold text-[#E8D5A0] uppercase tracking-wider text-[11px]">
+            <h4 className="font-bold text-[#CD8E33] uppercase tracking-wider text-[11px]">
               Consultório em Lisboa & Contactos
             </h4>
 
             <div className="space-y-2.5 text-stone-400">
               <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-[#C9A84C] shrink-0 mt-0.5" />
+                <MapPin className="w-4 h-4 text-[#CD8E33] shrink-0 mt-0.5" />
                 <div>
                   <div className="text-white font-medium">{CLINIC_INFO.address.street}</div>
                   <div>{CLINIC_INFO.address.postalCode} {CLINIC_INFO.address.city}, Portugal</div>
@@ -112,14 +113,14 @@ export const Footer: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-[#C9A84C] shrink-0" />
+                <Phone className="w-4 h-4 text-[#CD8E33] shrink-0" />
                 <a href={`tel:${CLINIC_INFO.phone}`} className="hover:text-white transition">
                   {CLINIC_INFO.phoneFormatted}
                 </a>
               </div>
 
               <div className="flex items-center gap-2.5">
-                <Globe className="w-4 h-4 text-[#C9A84C] shrink-0" />
+                <Globe className="w-4 h-4 text-[#CD8E33] shrink-0" />
                 <a 
                   href={CLINIC_INFO.website} 
                   target="_blank" 
@@ -131,14 +132,14 @@ export const Footer: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-[#C9A84C] shrink-0" />
+                <Mail className="w-4 h-4 text-[#CD8E33] shrink-0" />
                 <a href={`mailto:${CLINIC_INFO.email}`} className="hover:text-white transition">
                   {CLINIC_INFO.email}
                 </a>
               </div>
 
               <div className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-[#C9A84C] shrink-0" />
+                <Clock className="w-4 h-4 text-[#CD8E33] shrink-0" />
                 <span>{CLINIC_INFO.openingHours}</span>
               </div>
             </div>

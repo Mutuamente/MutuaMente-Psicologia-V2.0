@@ -1,10 +1,11 @@
-import { Service, Specialist, Article, Testimonial, Booking } from '../types';
+import { Service, Specialist, Article, Testimonial, Booking, Quote, DetailedReason } from '../types';
 
 export const CLINIC_INFO = {
   name: 'MutuaMente Psicologia',
-  legalName: 'MutuaMente - Serviços de Psicologia Clínica e Psicoterapia Lda.',
+  legalName: 'MutuaMente - Serviços de Psicologia Clínica e Psicoterapia',
   nif: '516892340',
   foundedBy: 'Dra. Sofia Godinho Cabrita (Cédula OPP n.º 15786)',
+  oppNumber: '15786',
   email: 'mutuamentepsicologia@gmail.com',
   website: 'https://mutuamente.pt',
   websiteFormatted: 'mutuamente.pt',
@@ -26,146 +27,262 @@ export const CLINIC_INFO = {
   openingHours: 'Segunda a Sexta: 08:30 – 20:30 | Sábado: 09:00 – 14:00'
 };
 
+export const QUOTES: Quote[] = [
+  {
+    text: 'O pensamento é o ensaio da ação.',
+    author: 'Sigmund Freud',
+    authorRole: 'Pai da Psicanálise'
+  },
+  {
+    text: "There is a crack in everything, that's how the light gets in.",
+    translationPt: 'Em tudo existe algo quebrado, é assim que é possível entrar luz.',
+    author: 'Leonard Cohen',
+    authorRole: 'Poeta, Romancista e Músico'
+  },
+  {
+    text: "I can't change the direction of the wind, but I can adjust my sails to always reach my destination.",
+    translationPt: 'Não posso mudar a direção do vento, mas posso ajustar as minhas velas para chegar sempre ao meu destino.',
+    author: 'Jimmy Dean',
+    authorRole: 'Músico e Comunicador'
+  },
+  {
+    text: 'You can do anything you set your mind to.',
+    translationPt: 'Pode alcançar tudo aquilo a que se propuser com determinação e clareza mental.',
+    author: 'Benjamin Franklin',
+    authorRole: 'Pensador e Polímata'
+  }
+];
+
 export const SERVICES: Service[] = [
   {
+    id: 'psicologia-clinica',
+    title: 'Consulta de Psicologia Clínica',
+    titleEn: 'Clinical Psychology Consultation',
+    shortDesc: 'Trabalhar a saúde mental e o bem-estar individual e coletivo com intervenções sistematizadas para a promoção de mudanças duradouras.',
+    shortDescEn: 'Evidence-based clinical intervention for emotional well-being, resilience, and sustainable personal growth.',
+    fullDesc: 'A Psicologia Clínica é uma área que tem como finalidade trabalhar a saúde mental e o bem-estar individual e coletivo com intervenções sistematizadas para a promoção de mudanças duradouras. Utiliza, para tal, vários métodos e técnicas a fim de conhecer a realidade psíquica e comportamental de cada pessoa, ou grupo de pessoas.\n\nOs motivos para se decidir a fazer consultas de psicologia são muito diversos. Esses motivos podem passar por estar a atravessar um período ou fase de vida conturbada, de dúvida ou ter várias questões para as quais não está a conseguir encontrar resposta sozinho, acerca de si, das suas interações interpessoais, da dinâmica familiar, da sua sexualidade ou caminho de vida. Poderá também ser necessário apoio caso esteja a experienciar uma situação de luto, mudança brusca, ansiedade e depressão, entre muitos outros.\n\nA psicóloga, seguindo uma abordagem dinâmica, é uma facilitadora que, munida de bagagem teórica e prática, convida a pessoa a ser mais tolerante, resiliente e a desenvolver um olhar mais sensível para si e sobre o mundo, dando-lhe novos sentidos.',
+    fullDescEn: 'Clinical Psychology is dedicated to fostering individual and collective mental health through structured, evidence-grounded interventions. Through a dynamic psychoanalytic framework, Dr. Sofia acts as a compassionate facilitator inviting self-tolerance, resilience, and new meaning.',
+    durationMinutes: 50,
+    priceEur: 65,
+    targetAudience: 'Adultos, Jovens e Casais (Presencial & Online)',
+    targetAudienceEn: 'Adults, Youths & Couples (In-person & Online)',
+    iconName: 'UserCheck',
+    badge: 'Referência Clínica',
+    badgeEn: 'Core Practice',
+    suitableFor: [
+      'Fases conturbadas, de dúvida ou transições de vida',
+      'Dificuldades nas interações interpessoais e dinâmica familiar',
+      'Ansiedade, ataques de pânico, estresse e depressão',
+      'Processos de luto, perdas significativas ou separação',
+      'Dúvidas existenciais, sexualidade e rumo pessoal'
+    ],
+    suitableForEn: [
+      'Challenging life phases, doubts, or transitions',
+      'Interpersonal relationship or family dynamic challenges',
+      'Anxiety, panic, persistent stress, and depression',
+      'Grief, significant loss, or separation',
+      'Existential questions, personal identity, and life path'
+    ],
+    specializations: [
+      'Modelo Psicanalítico e Dinâmico',
+      'Acolhimento Empático e Isento de Julgamentos',
+      'Presencial em Lisboa e Online por Videoconsulta Segura',
+      'Emissão de Recibo Verde Oficial com Cédula OPP 15786'
+    ]
+  },
+  {
+    id: 'avaliacao-psicologica',
+    title: 'Avaliação Psicológica',
+    titleEn: 'Psychological Assessment',
+    shortDesc: 'Procedimento formal através de instrumentos validados para avaliar aptidões, personalidade e competências comportamentais.',
+    shortDescEn: 'Formal evaluation through certified instruments assessing psychological traits, cognitive aptitudes, and behavioral competencies.',
+    fullDesc: 'A avaliação psicológica é um procedimento que visa avaliar, através de instrumentos previamente validados, os diversos processos psicológicos que compõe o indivíduo, nomeadamente aptidões, características de personalidade e competências comportamentais. A avaliação e descrição da realidade psicológica de alguém fornece ao psicólogo um conjunto de informações que este deve saber interpretar, selecionar e sobretudo transmitir e devolver. O psicólogo é o único profissional habilitado por lei para exercer esta função, sendo que esta responsabilidade traz consigo uma série de considerações éticas que visam não somente a imparcialidade do processo em si, mas principalmente a humanização deste, tendo como foco, em última instância a preservação da integridade do sujeito avaliado.',
+    fullDescEn: 'Psychological assessment is a standardized scientific procedure designed to evaluate psychological processes, personality structure, and behavioral competence. Licensed psychologists are the sole legally authorized professionals for this practice, adhering to rigorous ethics and human-centered respect.',
+    durationMinutes: 75,
+    priceEur: 90,
+    targetAudience: 'Candidatos a Concursos, Condutores, Seguranças e Estudantes',
+    targetAudienceEn: 'Public Contest Applicants, Drivers, Security Personnel & Students',
+    iconName: 'BrainCircuit',
+    badge: 'Habilitação Legal',
+    badgeEn: 'Certified',
+    suitableFor: [
+      'Procedimentos concursais e provas de ingresso na função pública',
+      'Avaliação psicológica obrigatória de condutores',
+      'Avaliação de seguranças privados e porte de arma',
+      'Orientação vocacional para estudantes do 9.º e 12.º ano ou adultos'
+    ],
+    suitableForEn: [
+      'Public competitive exams and state admission tenders',
+      'Mandatory psychological driver certifications',
+      'Private security guards psychological licensing',
+      'Vocational and career orientation for students and adults'
+    ],
+    specializations: [
+      'Avaliação Psicológica no âmbito de Procedimentos Concursais',
+      'Avaliação Psicológica de Condutores',
+      'Avaliação Psicológica de Seguranças',
+      'Orientação Vocacional'
+    ]
+  },
+  {
+    id: 'consultoria-rh',
+    title: 'Consultoria de Recursos Humanos',
+    titleEn: 'Human Resources Consulting',
+    shortDesc: 'Diagnósticos e estratégias práticas alinhando a cultura e os objetivos da empresa com as necessidades dos colaboradores.',
+    shortDescEn: 'Tailored organizational diagnostic and practical interventions aligning corporate objectives with employee well-being.',
+    fullDesc: 'Uma consultoria de RH é realizada de acordo com diagnósticos específicos, que levam em consideração toda a cultura da organização e utilizam técnicas adequadas à empresa, focadas no que é prático e aplicável.\n\nTrata-se de uma consultoria que possui uma visão externa do que acontece na empresa e que tem como objetivo fazer análises com um foco mais crítico sobre os seus processos, principalmente no que envolvem questões relacionadas à gestão de Recursos Humanos. A partir disso, o consultor consegue propor as melhorias necessárias para que sejam alcançados resultados verdadeiramente efetivos, tanto para a organização, quanto para seus colaboradores.\n\nAo realizar esta análise, o intuito do consultor é compreender a relação existente entre a empresa, seus colaboradores e também os gestores que fazem parte dela, para que assim consiga entender se há um alinhamento entre os objetivos organizacionais aos dos profissionais que compõem o negócio como um todo.\n\nApós a realização deste diagnóstico, caso ele verifique que existem falhas em determinados pontos e processos desenvolvidos dentro da empresa, o seu papel é o de elaborar estratégias eficientes de mudanças, que contemplem, principalmente, este alinhamento que citei acima, atendendo, efetivamente e na prática, os anseios da empresa, sem deixar de lado as necessidades dos colaboradores que dela fazem parte.',
+    fullDescEn: 'HR Consulting provides an external, critical, and practical assessment of organizational dynamics, culture, and recruitment processes to guarantee alignment between business strategy and people fulfillment.',
+    durationMinutes: 60,
+    priceEur: 85,
+    targetAudience: 'Empresas, Gestores, Equipas e Departamentos de RH',
+    targetAudienceEn: 'Companies, Managers, Teams & HR Departments',
+    iconName: 'Compass',
+    badge: 'Mundo Corporativo',
+    badgeEn: 'Corporate',
+    suitableFor: [
+      'Apoio na seleção de candidatos através da análise do seu perfil pessoal',
+      'Entrevistas estruturadas de avaliação de competências',
+      'Diagnóstico da cultura e clima organizacional',
+      'Estratégias de alinhamento entre lideranças e colaboradores'
+    ],
+    suitableForEn: [
+      'Candidate selection through in-depth psychological profile analysis',
+      'Competency-based behavioral assessment interviews',
+      'Diagnostic of workplace culture and team dynamics',
+      'Alignment strategies between corporate targets and human needs'
+    ],
+    specializations: [
+      'Apoio na Seleção de candidatos através da Análise do seu Perfil Pessoal',
+      'Entrevista de Avaliação de Competências'
+    ]
+  },
+  {
     id: 'psicologia-adultos',
-    title: 'Psicoterapia Individual (Adultos)',
-    titleEn: 'Individual Psychotherapy (Adults)',
-    shortDesc: 'Um espaço seguro e confidencial para autoconhecimento, superação da ansiedade, depressão e transições de vida.',
-    shortDescEn: 'A safe, confidential space for self-discovery, overcoming anxiety, depression, and major life transitions.',
-    fullDesc: 'Acompanhamento clínico continuado centrado nas suas necessidades singulares. Através de uma relação terapêutica empática e sem julgamentos, trabalhamos a regulação emocional, padrões de pensamento, resolução de conflitos internos e construção de ferramentas práticas para o dia a dia.',
-    fullDescEn: 'Continuous clinical guidance centered on your unique needs. We work with emotional regulation, thought patterns, and practical tools for daily well-being.',
+    title: 'Psicoterapia Individual de Adultos',
+    titleEn: 'Adult Individual Psychotherapy',
+    shortDesc: 'Acompanhamento clínico continuado focado na regulação emocional e autoconhecimento profundo.',
+    shortDescEn: 'Ongoing clinical psychotherapy focused on emotional regulation and deep self-awareness.',
+    fullDesc: 'Atendimento centrado no modelo de referência psicanalítico, acolhendo ansiedades, depressão, impasses e o desenvolvimento de novas perspetivas de vida.',
+    fullDescEn: 'Individual psychotherapy centered on psychoanalytic dynamic framework for emotional balance.',
     durationMinutes: 50,
     priceEur: 65,
     targetAudience: 'Adultos (>18 anos)',
     targetAudienceEn: 'Adults (18+)',
     iconName: 'UserCheck',
-    badge: 'Mais Procurado',
-    badgeEn: 'Most Popular',
     suitableFor: [
-      'Ansiedade, ataques de pânico e fobias',
-      'Sintomas depressivos e desânimo persistente',
-      'Burnout profissional e exaustão laboral',
-      'Baixa autoestima e insegurança',
-      'Processos de luto ou separação afetiva'
+      'Ansiedade e ataques de pânico',
+      'Tristeza persistente e desânimo',
+      'Exaustão laboral e gestão do estresse'
     ],
     suitableForEn: [
-      'Anxiety, panic attacks and phobias',
-      'Depressive symptoms and persistent apathy',
-      'Workplace burnout and exhaustion',
-      'Low self-esteem and insecurity',
-      'Grief and relationship breakdown'
-    ]
-  },
-  {
-    id: 'terapia-casal',
-    title: 'Terapia de Casal e Familiar',
-    titleEn: 'Couples & Family Therapy',
-    shortDesc: 'Restaurar a comunicação, resolver impasses relacionais e fortalecer a cumplicidade afetiva.',
-    shortDescEn: 'Restoring communication, resolving relational impasses, and strengthening emotional bonds.',
-    fullDesc: 'Sessões focadas na dinâmica da relação, proporcionando uma mediação neutra e construtiva. Identificamos ciclos repetitivos de conflito, reconstruímos a confiança após quebras de vínculo e melhoramos a comunicação emocional entre o par.',
-    fullDescEn: 'Sessions focused on relationship dynamics, providing neutral and constructive mediation to rebuild mutual trust.',
-    durationMinutes: 75,
-    priceEur: 90,
-    targetAudience: 'Casais e Núcleos Familiares',
-    targetAudienceEn: 'Couples and Families',
-    iconName: 'HeartHandshake',
-    suitableFor: [
-      'Crises de comunicação e distanciamento afetivo',
-      'Gestão de conflitos frequentes e discussões repetitivas',
-      'Transição para a parentalidade',
-      'Reconstrução de confiança após infidelidade',
-      'Separações conscientes e coparentalidade saudável'
-    ],
-    suitableForEn: [
-      'Communication breakdown and emotional distance',
-      'Recurring conflict patterns',
-      'Transition to parenthood',
-      'Rebuilding trust and intimacy',
-      'Conscious separation and healthy co-parenting'
+      'Anxiety and panic',
+      'Depression and low mood',
+      'Burnout and work stress'
     ]
   },
   {
     id: 'apoio-online',
-    title: 'Consultas Online (Telepsicologia)',
-    titleEn: 'Online Therapy (Telepsychology)',
-    shortDesc: 'Terapia acessível a partir do conforto da sua casa, com a mesma eficácia clínica e encriptação ponto a ponto.',
-    shortDescEn: 'Accessible therapy from the comfort of your home, with verified clinical efficacy and end-to-end encryption.',
-    fullDesc: 'Conecte-se com a Dra. Sofia Godinho Cabrita através da nossa sala de vídeo segura e confidencial. Ideal para quem reside fora de Lisboa, no estrangeiro (comunidade emigrante/expats) ou prefere flexibilidade de horários.',
-    fullDescEn: 'Connect directly with Dr. Sofia Godinho Cabrita via secure video consultation. Ideal for residents outside Lisbon, expats, and travelers.',
+    title: 'Consultas Online (Videoconsulta Segura)',
+    titleEn: 'Online Therapy (Secure Telepsychology)',
+    shortDesc: 'A mesma qualidade e rigor clínico no conforto da sua casa ou onde estiver.',
+    shortDescEn: 'The same clinical quality and safety from the comfort of your home.',
+    fullDesc: 'Sessões por videoconferência encriptada de ponta a ponta com a Dra. Sofia Godinho Cabrita, facilitando o acesso a residentes em qualquer parte de Portugal e no estrangeiro.',
+    fullDescEn: 'Encrypted telepsychology sessions conducted by Dr. Sofia Godinho Cabrita for clients worldwide.',
     durationMinutes: 50,
-    priceEur: 60,
+    priceEur: 65,
     targetAudience: 'Adultos e Jovens (Nacional e Internacional)',
-    targetAudienceEn: 'Adults & Young Adults (Worldwide)',
+    targetAudienceEn: 'Adults & Youths (Worldwide)',
     iconName: 'Video',
-    badge: 'Flexível',
-    badgeEn: 'Flexible',
     suitableFor: [
-      'Portugueses e expatriados a residir no estrangeiro',
-      'Pessoas com limitações geográficas ou de mobilidade',
-      'Profissionais com horários exigentes',
-      'Continuidade de tratamento em viagem de trabalho'
+      'Residentes fora de Lisboa ou no estrangeiro',
+      'Necessidade de flexibilidade de horários',
+      'Continuidade de tratamento durante deslocações'
     ],
     suitableForEn: [
-      'Expats and Portuguese speakers abroad',
-      'Clients with mobility or distance constraints',
-      'Busy professionals seeking time efficiency',
-      'Seamless therapy continuation while traveling'
-    ]
-  },
-  {
-    id: 'orientacao-vocacional',
-    title: 'Orientação Vocacional & Carreira',
-    titleEn: 'Vocational & Career Guidance',
-    shortDesc: 'Decisões escolares e profissionais conscientes com recurso a testes psicométricos validados.',
-    shortDescEn: 'Informed academic and career decisions backed by validated psychometric evaluations.',
-    fullDesc: 'Processo estruturado de exploração de interesses, aptidões cognitivas e valores pessoais. Indicado para estudantes de 9.º e 12.º ano na escolha do percurso escolar/universitário, ou adultos em momento de transição ou reconversão de carreira.',
-    fullDescEn: 'Structured exploration of interests, cognitive aptitudes, and personal values for students and transitioning professionals.',
-    durationMinutes: 60,
-    priceEur: 75,
-    targetAudience: 'Estudantes e Profissionais em Transição',
-    targetAudienceEn: 'Students and Career Switchers',
-    iconName: 'Compass',
-    suitableFor: [
-      'Escolha de área do ensino secundário (9.º ano)',
-      'Acesso ao ensino superior e candidaturas (12.º ano)',
-      'Reorientação de carreira profissional e mudança de área',
-      'Identificação de forças e potencial cognitivo'
-    ],
-    suitableForEn: [
-      'Secondary school course selection',
-      'University degree selection and goals',
-      'Mid-career pivots and industry changes',
-      'Strengths and cognitive potential identification'
-    ]
-  },
-  {
-    id: 'avaliacao-neuropsicologica',
-    title: 'Avaliação Psicológica e Cognitiva',
-    titleEn: 'Psychological & Cognitive Assessment',
-    shortDesc: 'Relatórios clínicos detalhados para despiste de PHDA, sobredotação ou declínio cognitivo.',
-    shortDescEn: 'Detailed clinical reports for ADHD screening, giftedness, or cognitive screening.',
-    fullDesc: 'Aplicação de baterias de testes normalizados para a população portuguesa pela Ordem dos Psicólogos. Inclui sessões de avaliação, elaboração de relatório clínico oficial e sessão de devolução detalhada com recomendações terapêuticas.',
-    fullDescEn: 'Administration of standardized neuropsychological test batteries with comprehensive official clinical reports.',
-    durationMinutes: 75,
-    priceEur: 110,
-    targetAudience: 'Jovens e Adultos',
-    targetAudienceEn: 'Adolescents & Adults',
-    iconName: 'BrainCircuit',
-    suitableFor: [
-      'Despiste de Perturbação de Hiperatividade e Défice de Atenção (PHDA)',
-      'Avaliação de Altas Habilidades / Sobredotação',
-      'Avaliação de funções executivas e memória',
-      'Relatórios clínicos para universidades ou medicina do trabalho'
-    ],
-    suitableForEn: [
-      'ADHD and attention screening',
-      'High intellectual potential / Giftedness assessment',
-      'Executive function and memory evaluations',
-      'Formal clinical reports for academic accommodations'
+      'Residents outside Lisbon or abroad',
+      'Schedule flexibility and convenience',
+      'Treatment continuity during travel'
     ]
   }
 ];
+
+export const WHEN_TO_SEEK_THERAPY: string[] = [
+  'Não está a conseguir lidar com situações que surgiram no seu trabalho;',
+  'As suas relações amorosas ou de família poderiam ser melhoradas;',
+  'Anda demasiadamente triste, ansioso, paralisado, estressado e irritado;',
+  'Deseja desenvolver habilidades sociais, como ser mais empático, comunicativo ou romper a barreira da timidez;',
+  'Gostaria de aprender a amar-se mais;',
+  'Deseja libertar-se de relacionamentos abusivos, mas ainda não descobriu como;',
+  'Os seus medos são paralisantes e sente que o atrapalham a ter uma vida autónoma e realizada;',
+  'Não consegue superar situações traumáticas do presente ou do passado;',
+  'Precisa de auxílio para passar por uma perda importante, um luto ou uma separação;',
+  'Gostaria de ser ouvido sem julgamentos;',
+  'Gostaria de viver uma transformação pessoal positiva;',
+  'Deseja cuidar da saúde mental para ser uma pessoa mais feliz.'
+];
+
+export const DETAILED_REASONS: DetailedReason[] = [
+  {
+    id: 'autoconhecimento',
+    title: 'Busca de autoconhecimento',
+    fullContent: 'O autoconhecimento é o grande benefício para quem faz psicoterapia. Através da relação terapêutica, uma pessoa é levada a conhecer aspectos de si mesma que, muitas vezes, sequer fazia ideia. Começa a compreender a razão de determinadas atitudes, de certos sentimentos e situações que ocorrem em sua vida. Além disso, quando uma pessoa se conhece a fundo, ela consegue lidar melhor com as suas emoções e com o seu comportamento, consequentemente lida melhor com muitos acontecimentos em sua vida. Isso não significa que ela não irá mais passar por momentos difíceis, significa que ela saberá contorna-los da melhor forma e tirar deles as melhores experiências para o seu crescimento pessoal e emocional. A busca pelo autoconhecimento pode auxiliar em diversas áreas da vida, como as relações e o desenvolvimento profissional, por exemplo.'
+  },
+  {
+    id: 'emocoes-negativas',
+    title: 'Sentimentos constantes de tristeza, ansiedade, estresse, raiva, desânimo',
+    fullContent: 'Todos nós nos sentimos tristes, com raiva ou ansiosos em alguns momentos de nossa vida e mesmo de nosso dia. As emoções consideradas negativas também são muito importantes porque é através delas que nos fortalecemos, que aprendemos a lidar com as frustrações, que desenvolvemos a resiliência e muitos outros aprendizados. Porém, é perfeitamente comum que você busque uma orientação psicológica se sentir que essas emoções tem atrapalhado a sua vida de alguma forma. O excesso de desânimo, de estresse, os momentos de raiva constantes e a ansiedade… tudo isso pode ser levado para o consultório psicológico e, por meio de um processo psicoterapêutico, ser desenvolvida a sua capacidade de melhor compreender e lidar com as emoções. O psicólogo irá ajudar também a identificar se esses sentimentos indicam algum tipo de patologia e lhe fornecer o direcionamento correto para acompanha-la.'
+  },
+  {
+    id: 'situacoes-dificeis',
+    title: 'Situações difíceis',
+    fullContent: 'Muitas vezes, quando estamos passando por uma situação complicada, parece que não conseguimos enxergar sozinhos uma solução. É comum nos aconselharmos então com as pessoas que amamos e mais confiamos, elas normalmente nos ajudam a enfrentar os problemas e nos sentirmos acolhidos. Mas há casos em que, mesmo contando com apoio de bons amigos e pessoas queridas, o problema parece tomar conta de nossa vida, perturba nossos pensamentos e simplesmente não conseguimos encontrar a saída. Nestes casos, procurar um psicólogo pode ser de grande valia, já que, além de ser alguém que está totalmente “de fora” do seu cotidiano, é também um profissional que vai dialogar com você de forma isenta de julgamentos e preconceitos, alguém com uma bagagem de estudos e com experiência para te mostrar soluções que pode ser que você não veja por si só. Diferentemente das pessoas com quem você já convive, o psicólogo não te dirá o que você deve fazer, mas te ajudará a pensar com maior clareza e a desenvolver a sua capacidade de solucionar conflitos.'
+  },
+  {
+    id: 'culpa-passado',
+    title: 'Sentimento de culpa ou dificuldade de lidar com o passado',
+    fullContent: 'O sentimento de culpa ou mesmo o fato de alguém viver ligado ao seu passado é uma verdadeira pedra que trava todas as chances de caminhar para frente. Quando uma pessoa não consegue se perdoar ou perdoar os outros, uma “ferida” emocional fica sempre aberta, pronta para sangrar a qualquer momento e trazer à tona tudo que já deveria ter sido resolvido e não foi. Iniciar psicoterapia então será muito importante para que essas questões passadas sejam melhor elaboradas, superadas e não mais impeçam que se viva de maneira satisfatória.'
+  },
+  {
+    id: 'separacoes-lutos',
+    title: 'Separações, lutos, perdas ou mudanças',
+    fullContent: 'É comum que diante de situações de grandes mudanças ou perdas, demoremos algum tempo para “digerir” tudo e retomarmos nossas vidas. O período de adaptação ou até mesmo o luto são normais e devem ser vividos para que os acontecimentos sejam bem elaborados. Não há um prazo determinado para que uma perda ou separação seja superada, isso é muito pessoal e depende de vários fatores, mas um psicólogo pode auxiliar muito neste processo. Quando alguém passa por uma situação assim, geralmente apresenta a necessidade de se sentir apoiado e acolhido e este acolhimento é recebido no processo psicoterapêutico. E não apenas isso, um profissional também irá ajudar a entender o momento vivido, a encontrar as melhores formas de aceitar e enfrentar. Além, é claro, de ter uma observação atenta para a ocorrência de sinais que indiquem o surgimento de algum transtorno.'
+  },
+  {
+    id: 'relacionamentos',
+    title: 'Dificuldades de relacionamento',
+    fullContent: 'Relacionar-se não é uma tarefa fácil e todos nós, sem exceção, passamos por conflitos nesta área da vida. Seja o relacionamento amoroso, com a família, com amigos, colegas de trabalho… para todos eles levamos aspectos de nossa história e de nossa personalidade e às vezes isso se choca com aquilo que o outro também carrega como bagagem. Não é preciso ter grandes dificuldades ou aguardar, por exemplo, que se esteja à beira de uma separação conjugal para buscar o apoio psicológico (o que acontece na maioria dos casos), pelo contrário, é possível que a busca pelo psicólogo seja uma forma de desenvolver cada vez mais as habilidades de relacionamento e investir nesse aspecto.'
+  },
+  {
+    id: 'comportamentos-alterados',
+    title: 'Manias, medos, comportamentos alterados',
+    fullContent: 'É possível que os seus medos em excesso, comportamentos que você não tem conseguido controlar ou “manias” queiram lhe dizer que algo não vai bem. Comer de forma compulsiva, não conseguir para de comprar coisas, sentir medo de sair de casa ou de se relacionar com pessoas, chorar o tempo todo… são alguns exemplos destes comportamentos que merecem atenção. É claro que, por si só, não são sinônimos de transtornos, mas podem indicar o desenvolvimento de alguma patologia e um psicólogo com certeza poderá lhe ajudar a identificar isso.'
+  },
+  {
+    id: 'curiosidade',
+    title: 'Curiosidade ou vontade',
+    fullContent: 'Isso mesmo, você pode ir ao psicólogo simplesmente porque tem curiosidade ou vontade de fazer psicoterapia! É possível que você se surpreenda muito com esse encontro e que o processo te ajude a se desenvolver em muitos aspectos.'
+  },
+  {
+    id: 'prevencao',
+    title: 'Prevenção',
+    fullContent: 'Hoje quase todo mundo já se convenceu da importância de se fazer exames médicos periódicos, ter uma boa alimentação e praticar exercícios físicos regularmente. São atitudes básicas que nos ajudam a prevenir doenças e ter uma qualidade de vida melhor. Estamos ainda quebrando barreiras quando falamos de prevenção em saúde mental, mas já existe uma evolução. O fato é que a saúde emocional é tão importante quanto a física, afinal, estão ligadas! Existem muitas pesquisas na área da psicossomática que indicam a influência das emoções em nossa saúde como um todo, incluindo o desenvolvimento de doenças e o tratamento e prevenção das mesmas. Nossa preocupação com a longevidade e boa qualidade de vida deve envolver um cuidado também psicológico e, neste sentido, é muito importante buscarmos a orientação profissional.\n\nExistem ainda outros motivos para que você procure um psicólogo clínico ou mesmo de outras especialidades, pois a Psicologia está presente em muitas outras áreas, como a Jurídica, Social, Esportiva, Hospitalar, Organizacional… cada profissional tem objetivos diferentes em cada uma dessas áreas. É importante que saibamos que a Psicologia se faz cada vez mais presente em nosso cotidiano e não somente na clínica. Quanto mais conhecermos acerca de seu papel na sociedade, melhor entenderemos sobre sua contribuição para a nossa vida particularmente.'
+  }
+];
+
+export const PARTNERSHIPS_INFO = {
+  pricingNote: 'Valores transparentes e ajustados a cada necessidade e enquadramento.',
+  allianz: {
+    name: 'Allianz',
+    status: 'Comparticipação / Reembolso',
+    desc: 'Comparticipação de consultas de Psicologia Clínica através de apólice de saúde com cobertura de ambulatório ou medicina especializada.',
+  },
+  protocols: {
+    discount: 'Desconto de 10%',
+    title: 'Parcerias & Protocolos Institucionais',
+    desc: 'Desconto de 10% em consultas de Psicologia Clínica para entidades, empresas e organizações protocoladas (em fase de formalização e expansão de acordos).',
+  },
+  reimbursementGuide: 'Todas as consultas beneficiam da emissão de Recibo Verde Oficial da Autoridade Tributária com menção à cédula profissional OPP n.º 15786, sendo 100% elegíveis para dedução no IRS (15% em despesas de saúde, isento de IVA ao abrigo do art. 9.º do CIVA) e para reembolso em seguros como Allianz, Médis, Multicare, AdvanceCare e ADSE.'
+};
 
 export const SPECIALISTS: Specialist[] = [
   {
@@ -174,34 +291,32 @@ export const SPECIALISTS: Specialist[] = [
     role: 'Psicóloga Clínica & Fundadora',
     roleEn: 'Clinical Psychologist & Founder',
     oppNumber: 'Cédula OPP n.º 15786',
-    bio: 'Psicóloga Clínica formada no ISPA – Instituto Universitário de Ciências Psicológicas, Sociais e da Vida, com Licenciatura em Psicologia Aplicada (Ramo Clínica) e Mestrado em Psicologia Clínica. Membro efectivo da Ordem dos Psicólogos Portugueses (Cédula n.º 15786) e registada na Entidade Reguladora da Saúde (ERS). Com mais de 15 anos de prática clínica, é especialista no acolhimento e tratamento de perturbações de ansiedade, depressão, burnout, relações interpessoais, bem como avaliação psicológica especializada e orientação vocacional.',
-    bioEn: 'Clinical Psychologist graduated from ISPA with a Master in Clinical Psychology. Full member of the Portuguese Order of Psychologists (OPP 15786) and registered with ERS. With over 15 years of experience, specializing in anxiety, depression, burnout, interpersonal dynamics, psychological assessments, and vocational guidance.',
+    bio: 'O meu nome é Sofia Godinho Cabrita e sou Psicóloga Clínica. Formei-me no Ispa, Instituto Universitário de Ciências Psicológicas, Sociais e da Vida, onde realizei a Licenciatura em Psicologia Aplicada, Ramo de Especialização Clínica e o Mestrado em Psicologia Clínica. Sou membro efetivo da Ordem dos Psicólogos Portugueses.\n\nAo longo de 15 anos de carreira tenho desenvolvido atividade tanto em ambiente clínico como no mundo corporativo e de consultoria, mantendo um investimento continuado nas áreas de avaliação psicológica, promoção de competências de gestão emocional e desenvolvimento pessoal.\n\nNa prática clínica sigo o modelo de referência psicanalítico, sendo a minha grande paixão aliar o conhecimento humano aos desafios das organizações e do próprio indivíduo.\n\nVamos conhecer-nos?\nCédula Profissional: 15786',
+    bioEn: 'Clinical Psychologist graduated from Ispa (Degree in Applied Psychology, Clinical Specialization & Master in Clinical Psychology). Full Member of the Portuguese Order of Psychologists (OPP 15786). Over 15 years of experience in clinical practice, corporate consultancy, psychological assessment, and emotional management, working within the psychoanalytic reference model.',
     specialties: [
-      'Ansiedade e Pânico', 
-      'Depressão e Humor', 
-      'Psicoterapia Integrativa', 
-      'Terapia de Casal e Familiar',
-      'Avaliação Psicológica', 
+      'Psicologia Clínica (Modelo Psicanalítico)',
+      'Avaliação Psicológica Especializada',
+      'Consultoria de Recursos Humanos',
+      'Gestão Emocional e Desenvolvimento Pessoal',
       'Orientação Vocacional',
-      'Regulação Emocional'
+      'Procedimentos Concursais, Condutores e Seguranças'
     ],
     specialtiesEn: [
-      'Anxiety & Panic', 
-      'Depression & Mood', 
-      'Integrative Psychotherapy', 
-      'Couples & Family Therapy',
-      'Psychological Assessment', 
+      'Clinical Psychology (Psychoanalytic Model)',
+      'Specialized Psychological Assessment',
+      'Human Resources Consulting',
+      'Emotional Management & Personal Growth',
       'Vocational Guidance',
-      'Emotional Regulation'
+      'Certified Assessments for Competitions & Drivers'
     ],
     languages: ['Português', 'English', 'Español'],
-    photoUrl: 'https://raw.githubusercontent.com/Mutuamente/mutuamente-website/main/photo.png',
+    photoUrl: './photo.png',
     consultationTypes: [
-      'psicologia-adultos', 
-      'terapia-casal', 
-      'apoio-online', 
-      'orientacao-vocacional', 
-      'avaliacao-neuropsicologica'
+      'psicologia-clinica',
+      'avaliacao-psicologica',
+      'consultoria-rh',
+      'psicologia-adultos',
+      'apoio-online'
     ],
     availabilityDays: [1, 2, 3, 4, 5, 6]
   }

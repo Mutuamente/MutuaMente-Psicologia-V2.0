@@ -1,20 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --gold: #C9A84C;
-  --gold-light: #F5EED8;
-  --gold-mid: #E8D5A0;
-  --gold-dark: #9A7A2E;
-  --blue: #2A6496;
-  --blue-light: #E8F1F8;
-  --blue-mid: #5B8DB8;
-  --blue-dark: #1A4A72;
+  --gold: #CD8E33;
+  --gold-light: #FAF3E7;
+  --gold-mid: #E5B468;
+  --gold-dark: #A56E1F;
+  --charcoal: #545454;
+  --charcoal-light: #7A7A7A;
+  --charcoal-dark: #333333;
   --warm: #FDFBF7;
   --warm-dark: #F5F0E5;
   --text: #2C2822;
-  --text-muted: #6B6560;
+  --text-muted: #545454;
   --white: #FFFFFF;
-  --border: #E8E0D0;
+  --border: #EADBCC;
 }
 
 @layer base {
@@ -22,36 +21,33 @@
     scroll-behavior: smooth;
   }
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-color: #FDFBF7;
     color: #2C2822;
   }
 }
 
 .font-serif-display {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Bellefair', Georgia, serif;
 }
 
 /* MutuaMente Brand Accent Helpers */
 .bg-mutua-warm { background-color: #FDFBF7; }
 .bg-mutua-warm-dark { background-color: #F5F0E5; }
-.bg-mutua-gold { background-color: #C9A84C; }
-.bg-mutua-gold-light { background-color: #F5EED8; }
-.bg-mutua-blue { background-color: #2A6496; }
-.bg-mutua-blue-dark { background-color: #1A4A72; }
-.bg-mutua-blue-light { background-color: #E8F1F8; }
+.bg-mutua-gold { background-color: #CD8E33; }
+.bg-mutua-gold-light { background-color: #FAF3E7; }
+.bg-mutua-gold-mid { background-color: #E5B468; }
+.bg-mutua-charcoal { background-color: #545454; }
 
-.text-mutua-gold { color: #C9A84C; }
-.text-mutua-gold-dark { color: #9A7A2E; }
-.text-mutua-blue { color: #2A6496; }
-.text-mutua-blue-dark { color: #1A4A72; }
+.text-mutua-gold { color: #CD8E33; }
+.text-mutua-gold-dark { color: #A56E1F; }
+.text-mutua-charcoal { color: #545454; }
 .text-mutua-text { color: #2C2822; }
-.text-mutua-muted { color: #6B6560; }
+.text-mutua-muted { color: #545454; }
 
-.border-mutua-gold { border-color: #C9A84C; }
-.border-mutua-gold-mid { border-color: #E8D5A0; }
-.border-mutua-blue { border-color: #2A6496; }
-.border-mutua-border { border-color: #E8E0D0; }
+.border-mutua-gold { border-color: #CD8E33; }
+.border-mutua-gold-mid { border-color: #E5B468; }
+.border-mutua-border { border-color: #EADBCC; }
 
 /* Custom scrollbar for subtle dashboard elements */
 ::-webkit-scrollbar {

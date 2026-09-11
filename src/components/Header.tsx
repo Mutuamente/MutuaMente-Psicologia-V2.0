@@ -31,11 +31,12 @@ export const Header: React.FC = () => {
   const pendingBookingsCount = bookings.filter(b => b.status === 'pendente_pagamento' || b.status === 'confirmada').length;
 
   const navLinks = [
-    { href: '#servicos', label: currentLanguage === 'pt' ? 'Especialidades' : 'Services' },
-    { href: '#sobre', label: currentLanguage === 'pt' ? 'A MutuaMente' : 'About Us' },
+    { href: '#servicos', label: currentLanguage === 'pt' ? 'Serviços' : 'Services' },
+    { href: '#acordos-precos', label: currentLanguage === 'pt' ? 'Acordos & Parcerias' : 'Partnerships' },
+    { href: '#quando-procurar', label: currentLanguage === 'pt' ? 'Quando Procurar' : 'When to Seek' },
+    { href: '#sobre', label: currentLanguage === 'pt' ? 'O MutuaMente' : 'About Us' },
     { href: '#equipa', label: currentLanguage === 'pt' ? 'Dra. Sofia Cabrita' : 'Dr. Sofia Cabrita' },
-    { href: '#metodologia', label: currentLanguage === 'pt' ? 'Como Funciona' : 'How It Works' },
-    { href: '#artigos', label: currentLanguage === 'pt' ? 'Artigos & Dicas' : 'Articles' },
+    { href: '#artigos', label: currentLanguage === 'pt' ? 'Artigos' : 'Articles' },
     { href: '#contactos', label: currentLanguage === 'pt' ? 'Contactos' : 'Contact' },
   ];
 
@@ -48,21 +49,21 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-stone-50/95 backdrop-blur-md border-b border-stone-200/80 transition-all">
+    <header className="sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-stone-200/80 transition-all">
       {/* Top Clinical & Emergency Banner */}
-      <div className="bg-stone-900 text-stone-300 text-xs py-1.5 px-4 sm:px-6">
+      <div className="bg-[#545454] text-stone-300 text-xs py-1.5 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-4 text-center sm:text-left flex-wrap justify-center sm:justify-start">
             <span className="inline-flex items-center gap-1.5 text-stone-200 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#C9A84C]" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#CD8E33]" />
               <span>Cédula OPP n.º 15786</span>
             </span>
-            <span className="hidden md:inline-block text-stone-600">•</span>
+            <span className="hidden md:inline-block text-stone-500">•</span>
             <span className="hidden md:inline-flex items-center gap-1.5 text-stone-300">
-              <MapPin className="w-3.5 h-3.5 text-stone-400" />
+              <MapPin className="w-3.5 h-3.5 text-[#CD8E33]" />
               <span>Lisboa (Av. Duque de Ávila) & Consultas Online</span>
             </span>
-            <span className="hidden lg:inline-block text-stone-600">•</span>
+            <span className="hidden lg:inline-block text-stone-500">•</span>
             <span className="hidden lg:inline-flex items-center gap-1.5 text-stone-300">
               <Clock className="w-3.5 h-3.5 text-stone-400" />
               <span>{CLINIC_INFO.openingHours}</span>
@@ -74,12 +75,12 @@ export const Header: React.FC = () => {
               href={`tel:${CLINIC_INFO.phone}`} 
               className="inline-flex items-center gap-1 text-stone-300 hover:text-white transition-colors"
             >
-              <Phone className="w-3 h-3 text-[#C9A84C]" />
+              <Phone className="w-3 h-3 text-[#CD8E33]" />
               <span>{CLINIC_INFO.phoneFormatted}</span>
             </a>
-            <span className="text-stone-700">|</span>
-            <span className="text-[11px] text-amber-300/90 font-light hidden sm:inline">
-              Apoio Urgente SNS 24: <strong className="font-semibold text-amber-200">808 24 24 24</strong>
+            <span className="text-stone-500">|</span>
+            <span className="text-[11px] text-amber-200/90 font-light hidden sm:inline">
+              Apoio Urgente SNS 24: <strong className="font-semibold text-white">808 24 24 24</strong>
             </span>
           </div>
         </div>
@@ -94,31 +95,31 @@ export const Header: React.FC = () => {
             className="flex items-center gap-3 group focus:outline-none"
             id="brand-logo-link"
           >
-            <div className="w-11 h-11 rounded-full bg-white border-2 border-[#E8D5A0] text-[#2A6496] flex items-center justify-center shadow-xs group-hover:scale-105 group-hover:border-[#C9A84C] transition-all duration-200">
-              <MutuaMenteSymbol className="w-7 h-7 text-[#2A6496]" />
+            <div className="w-11 h-11 rounded-full bg-white border-2 border-[#E5B468]/60 text-[#CD8E33] flex items-center justify-center shadow-xs group-hover:scale-105 group-hover:border-[#CD8E33] transition-all duration-200">
+              <MutuaMenteSymbol className="w-7 h-7 text-[#CD8E33]" color="#CD8E33" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="font-serif-display text-2xl font-bold tracking-tight text-[#2C2822]">
-                  Mutua<span className="text-[#C9A84C]">Mente</span>
+                <span className="font-serif-display text-2xl font-normal tracking-tight text-[#545454]">
+                  Mutua<span className="text-[#CD8E33]">Mente</span>
                 </span>
-                <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-[#F5EED8] text-[#9A7A2E] border border-[#E8D5A0] hidden sm:inline-block">
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-[#FAF3E7] text-[#CD8E33] border border-[#E5B468]/60 hidden sm:inline-block">
                   Psicologia
                 </span>
               </div>
-              <span className="text-[11px] font-medium text-[#6B6560] tracking-wide">
+              <span className="text-[11px] font-medium text-[#545454]/80 tracking-wide">
                 {currentLanguage === 'pt' ? 'Psicoterapia Clínica • Lisboa & Online' : 'Clinical Psychotherapy • Lisbon & Online'}
               </span>
             </div>
           </a>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7">
+          <nav className="hidden xl:flex items-center gap-6">
             {navLinks.map((link) => (
               <button
                 key={link.href}
                 onClick={() => handleNavClick(link.href)}
-                className="text-sm font-medium text-[#6B6560] hover:text-[#9A7A2E] transition-colors py-1 cursor-pointer"
+                className="text-xs font-semibold text-[#545454] hover:text-[#CD8E33] transition-colors py-1 cursor-pointer"
               >
                 {link.label}
               </button>
@@ -131,10 +132,10 @@ export const Header: React.FC = () => {
             <button
               id="lang-toggle-btn"
               onClick={() => setLanguage(currentLanguage === 'pt' ? 'en' : 'pt')}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#E8D5A0]/80 text-[#6B6560] hover:text-[#2C2822] hover:bg-[#F5EED8]/40 text-xs font-semibold transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#E5B468]/60 text-[#545454] hover:text-[#CD8E33] hover:bg-[#FAF3E7]/50 text-xs font-semibold transition cursor-pointer"
               title="Mudar idioma / Switch language"
             >
-              <Globe className="w-3.5 h-3.5 text-[#9A7A2E]" />
+              <Globe className="w-3.5 h-3.5 text-[#CD8E33]" />
               <span>{currentLanguage.toUpperCase()}</span>
             </button>
 
@@ -142,17 +143,17 @@ export const Header: React.FC = () => {
             <button
               id="dashboard-open-btn"
               onClick={() => setIsDashboardOpen(true)}
-              className="relative inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-[#F5EED8]/40 text-[#2C2822] text-xs font-semibold transition cursor-pointer border border-[#E8D5A0]"
+              className="relative inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-[#FAF3E7]/60 text-[#545454] text-xs font-semibold transition cursor-pointer border border-[#E5B468]/60"
               title={isClinicalAuthenticated ? "Painel Clínico Desbloqueado" : "Área Clínica Protegida por Palavra-passe"}
             >
               {isClinicalAuthenticated ? (
-                <ShieldCheck className="w-3.5 h-3.5 text-[#2A6496]" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#CD8E33]" />
               ) : (
-                <Lock className="w-3.5 h-3.5 text-[#9A7A2E]" />
+                <Lock className="w-3.5 h-3.5 text-[#CD8E33]" />
               )}
               <span>{currentLanguage === 'pt' ? 'Área Clínica' : 'Clinical Area'}</span>
               {pendingBookingsCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-[#C9A84C] text-white text-[10px] flex items-center justify-center font-bold">
+                <span className="w-4 h-4 rounded-full bg-[#CD8E33] text-white text-[10px] flex items-center justify-center font-bold">
                   {pendingBookingsCount}
                 </span>
               )}
@@ -162,9 +163,9 @@ export const Header: React.FC = () => {
             <button
               id="header-booking-cta"
               onClick={() => setIsBookingOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer transform active:scale-95"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#CD8E33] hover:bg-[#B57827] text-white text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer transform active:scale-95"
             >
-              <Calendar className="w-4 h-4 text-[#E8D5A0]" />
+              <Calendar className="w-4 h-4 text-white" />
               <span>{currentLanguage === 'pt' ? 'Marcar Consulta' : 'Book Appointment'}</span>
             </button>
           </div>
@@ -234,9 +235,9 @@ export const Header: React.FC = () => {
                 setMobileMenuOpen(false);
                 setIsBookingOpen(true);
               }}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white font-semibold text-base shadow"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-[#CD8E33] hover:bg-[#B57827] text-white font-semibold text-base shadow"
             >
-              <Calendar className="w-5 h-5 text-[#E8D5A0]" />
+              <Calendar className="w-5 h-5 text-white" />
               <span>Marcar Consulta Online ou Presencial</span>
             </button>
           </div>

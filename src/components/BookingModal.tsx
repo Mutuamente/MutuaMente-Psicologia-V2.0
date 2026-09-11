@@ -386,6 +386,9 @@ export const BookingModal: React.FC = () => {
                   src={currentSpecialist.photoUrl}
                   alt={currentSpecialist.name}
                   className="w-20 h-20 rounded-2xl object-cover shrink-0 shadow-sm border-2 border-white"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://usr-cdn.zaask.pt/users/067bf29c16c79c3f951f72f764e2bbdbdfbfab97';
+                  }}
                 />
                 <div className="flex-1 text-center sm:text-left min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">

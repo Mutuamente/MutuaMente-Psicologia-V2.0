@@ -1,4 +1,7 @@
 export type ServiceId = 
+  | 'psicologia-clinica'
+  | 'avaliacao-psicologica'
+  | 'consultoria-rh'
   | 'psicologia-adultos'
   | 'terapia-casal'
   | 'apoio-online'
@@ -10,6 +13,19 @@ export type Modality = 'presencial' | 'online';
 export type PaymentMethod = 'mbway' | 'multibanco' | 'cartao' | 'applepay' | 'paypal' | 'pos_consulta';
 
 export type BookingStatus = 'confirmada' | 'pendente_pagamento' | 'concluida' | 'cancelada';
+
+export interface Quote {
+  text: string;
+  translationPt?: string;
+  author: string;
+  authorRole?: string;
+}
+
+export interface DetailedReason {
+  id: string;
+  title: string;
+  fullContent: string;
+}
 
 export interface Service {
   id: ServiceId;
@@ -28,6 +44,7 @@ export interface Service {
   badgeEn?: string;
   suitableFor: string[];
   suitableForEn: string[];
+  specializations?: string[];
 }
 
 export interface Specialist {
