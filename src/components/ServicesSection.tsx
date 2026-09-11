@@ -20,7 +20,8 @@ export const ServicesSection: React.FC = () => {
   const { 
     currentLanguage, 
     setIsBookingOpen, 
-    setSelectedServiceForBooking 
+    setSelectedServiceForBooking,
+    setSelectedModalityForBooking 
   } = useBooking();
 
   const [activeCategory, setActiveCategory] = useState<'todos' | 'adultos' | 'avaliacao'>('todos');
@@ -28,24 +29,30 @@ export const ServicesSection: React.FC = () => {
   const getServiceIcon = (iconName: string) => {
     switch (iconName) {
       case 'UserCheck':
-        return <UserCheck className="w-6 h-6 text-[#CD8E33]" />;
+        return <UserCheck className="w-7 h-7 sm:w-8 sm:h-8 text-[#CD8E33]" strokeWidth={2.2} />;
       case 'Sparkles':
-        return <Sparkles className="w-6 h-6 text-[#CD8E33]" />;
+        return <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-[#CD8E33]" strokeWidth={2.2} />;
       case 'HeartHandshake':
-        return <Users2 className="w-6 h-6 text-[#CD8E33]" />;
+        return <Users2 className="w-7 h-7 sm:w-8 sm:h-8 text-[#CD8E33]" strokeWidth={2.2} />;
       case 'Video':
-        return <Video className="w-6 h-6 text-[#CD8E33]" />;
+        return <Video className="w-7 h-7 sm:w-8 sm:h-8 text-[#CD8E33]" strokeWidth={2.2} />;
       case 'Compass':
-        return <Compass className="w-6 h-6 text-[#CD8E33]" />;
+        return <Compass className="w-7 h-7 sm:w-8 sm:h-8 text-[#CD8E33]" strokeWidth={2.2} />;
       case 'BrainCircuit':
-        return <BrainCircuit className="w-6 h-6 text-[#CD8E33]" />;
+        return <BrainCircuit className="w-7 h-7 sm:w-8 sm:h-8 text-[#CD8E33]" strokeWidth={2.2} />;
       default:
-        return <UserCheck className="w-6 h-6 text-[#CD8E33]" />;
+        return <UserCheck className="w-7 h-7 sm:w-8 sm:h-8 text-[#CD8E33]" strokeWidth={2.2} />;
     }
   };
 
   const handleBookService = (serviceId: ServiceId) => {
-    setSelectedServiceForBooking(serviceId);
+    if (serviceId === 'apoio-online') {
+      setSelectedServiceForBooking('psicologia-clinica');
+      setSelectedModalityForBooking('online');
+    } else {
+      setSelectedServiceForBooking(serviceId);
+      setSelectedModalityForBooking('presencial');
+    }
     setIsBookingOpen(true);
   };
 
@@ -86,7 +93,7 @@ export const ServicesSection: React.FC = () => {
                 <div className="p-6 sm:p-8">
                   {/* Top Bar: Icon & Badge */}
                   <div className="flex items-start justify-between gap-3 mb-5">
-                    <div className="w-12 h-12 rounded-2xl bg-[#FAF3E7] border border-[#E5B468]/40 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <div className="w-14 h-14 rounded-2xl bg-[#FAF3E7] border border-[#E5B468]/50 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0 shadow-xs">
                       {getServiceIcon(service.iconName)}
                     </div>
 

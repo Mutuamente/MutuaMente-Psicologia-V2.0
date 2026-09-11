@@ -20,14 +20,16 @@ export const HeroSection: React.FC = () => {
   const { 
     currentLanguage, 
     setIsBookingOpen, 
-    setSelectedServiceForBooking 
+    setSelectedServiceForBooking,
+    setSelectedModalityForBooking 
   } = useBooking();
 
-  const [selectedService, setSelectedService] = useState<ServiceId>('psicologia-adultos');
+  const [selectedService, setSelectedService] = useState<ServiceId>('psicologia-clinica');
   const [selectedModality, setSelectedModality] = useState<Modality>('presencial');
 
   const handleStartBooking = () => {
     setSelectedServiceForBooking(selectedService);
+    setSelectedModalityForBooking(selectedModality);
     setIsBookingOpen(true);
   };
 
@@ -153,7 +155,7 @@ export const HeroSection: React.FC = () => {
                         }`}
                       >
                         <Video className="w-3 h-3 text-[#CD8E33]" />
-                        <span>Online Vídeo</span>
+                        <span>Videoconsulta</span>
                       </button>
                     </div>
                   </div>

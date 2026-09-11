@@ -14,6 +14,8 @@ interface BookingContextType {
   setIsDashboardOpen: (open: boolean) => void;
   selectedServiceForBooking?: ServiceId;
   setSelectedServiceForBooking: (serviceId?: ServiceId) => void;
+  selectedModalityForBooking?: 'presencial' | 'online';
+  setSelectedModalityForBooking: (modality?: 'presencial' | 'online') => void;
   selectedSpecialistForBooking?: string;
   setSelectedSpecialistForBooking: (specialistId?: string) => void;
   selectedBookingForReceipt: Booking | null;
@@ -208,6 +210,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [selectedServiceForBooking, setSelectedServiceForBooking] = useState<ServiceId | undefined>(undefined);
+  const [selectedModalityForBooking, setSelectedModalityForBooking] = useState<'presencial' | 'online' | undefined>(undefined);
   const [selectedSpecialistForBooking, setSelectedSpecialistForBooking] = useState<string | undefined>(undefined);
   const [selectedBookingForReceipt, setSelectedBookingForReceipt] = useState<Booking | null>(null);
   const [selectedEmailForPreview, setSelectedEmailForPreview] = useState<EmailNotification | null>(null);
@@ -416,7 +419,10 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const referenceCode = `MUT-${randomSuffix}`;
 
     const isOnline = formData.modality === 'online';
-    const meetingUrl = isOnline ? `https://meet.mutuamente.pt/sala-${formData.specialistId}-${randomSuffix}` : undefined;
+    const meet1 = Math.random().toString(36).substring(2, 5);
+    const meet2 = Math.random().toString(36).substring(2, 6);
+    const meet3 = Math.random().toString(36).substring(2, 5);
+    const meetingUrl = isOnline ? `https://meet.google.com/${meet1}-${meet2}-${meet3}` : undefined;
     const locationAddress = isOnline ? undefined : CLINIC_INFO.address.street + ', ' + CLINIC_INFO.address.city;
 
     const newBooking: Booking = {
@@ -522,6 +528,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setIsDashboardOpen,
         selectedServiceForBooking,
         setSelectedServiceForBooking,
+        selectedModalityForBooking,
+        setSelectedModalityForBooking,
         selectedSpecialistForBooking,
         setSelectedSpecialistForBooking,
         selectedBookingForReceipt,
@@ -555,3 +563,45 @@ export const useBooking = () => {
   }
   return context;
 };
+
+/**
+ * Generates an instant, pre-filled Google Calendar event URL for an appointment
+ */
+export function generateGoogleCalendarUrl(
+  booking: Booking, 
+  serviceTitle: string = 'Consulta de Psicologia', 
+  specialistName: string = 'Dra. Sofia Godinho Cabrita'
+): string {
+  const isOnline = booking.modality === 'online';
+  const title = encodeURIComponent(`Consulta MutuaMente - ${serviceTitle} (${specialistName})`);
+  
+  const meetLine = isOnline && booking.meetingUrl 
+    ? `\n\nLink Videoconsulta Google Meet: ${booking.meetingUrl}` 
+    : `\n\nLocal: ${CLINIC_INFO.address.street}, Saldanha, Lisboa`;
+
+  const details = encodeURIComponent(
+    `Consulta de Psicologia com ${specialistName} (Cédula OPP 15786).\n` +
+    `Referência da Marcação: ${booking.referenceCode}\n` +
+    `Utente: ${booking.client.name}\n` +
+    `Telefone: ${booking.client.phone}${meetLine}\n\n` +
+    `Em caso de necessidade de contacto: ${CLINIC_INFO.email} | ${CLINIC_INFO.phoneFormatted}`
+  );
+
+  const location = encodeURIComponent(
+    isOnline ? (booking.meetingUrl || 'Videoconsulta Google Meet') : `${CLINIC_INFO.address.street}, 1000-141 Lisboa`
+  );
+
+  // Format date and time for Google Calendar: YYYYMMDDTHHmm00
+  const dateCompact = booking.date.replace(/-/g, '');
+  const [hours, mins] = booking.time.split(':').map(Number);
+  const duration = booking.durationMinutes || 50;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const startStr = `${dateCompact}T${pad(hours)}${pad(mins)}00`;
+
+  const startDate = new Date(`${booking.date}T${booking.time}:00`);
+  const endDate = new Date(startDate.getTime() + duration * 60000);
+  const endStr = `${dateCompact}T${pad(endDate.getHours())}${pad(endDate.getMinutes())}00`;
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+}

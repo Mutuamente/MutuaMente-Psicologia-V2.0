@@ -2,35 +2,37 @@
 
 Website estático e independente da clínica de psicologia **MutuaMente**, fundada pela **Dra. Sofia Godinho Cabrita** (Cédula OPP n.º 15786).
 
-Este projeto é 100% estático (Single Page Application desenvolvida em React + Vite + Tailwind CSS) e **não necessita de Netlify, Vercel ou qualquer servidor/backend externo**. Todo o código e armazenamento clínico funcionam diretamente no browser (armazenamento local protegido por palavra-passe e envio de confirmações por EmailJS) e é ideal para ser alojado diretamente no **GitHub Pages** de forma gratuita e sem limites.
+Este projeto é uma Single Page Application desenvolvida em React + Vite + Tailwind CSS e **não necessita de qualquer servidor/backend externo**. Funciona a 100% de forma estática no **GitHub Pages**.
 
 ---
 
-## 🚀 Como Alojamento no GitHub Pages (Sem Entidades Externas)
+## 🚀 Como Ativar o GitHub Pages Corretamente
 
-O projeto já inclui um fluxo automatizado de publicação (**GitHub Actions**) localizado em `.github/workflows/deploy.yml`.
+O erro de página em branco com **`main.tsx (404)`** acontece quando o GitHub Pages está configurado para servir a branch `main` diretamente (código-fonte não compilado).
 
-### Passo 1: Enviar o código para o seu repositório no GitHub
-Se ainda não enviou, efetue o `push` do repositório para o GitHub:
-```bash
-git add .
-git commit -m "Publicação MutuaMente Psicologia"
-git push origin main
-```
+Para corrigir e colocar o site online, escolha uma das duas opções abaixo:
 
-### Passo 2: Ativar o GitHub Pages no Repositório
-1. No seu repositório no GitHub, clique no separador **Settings** (Definições).
+### OPÇÃO A (Recomendada - Totalmente Automática via GitHub Actions)
+1. No seu repositório no GitHub (`MutuaMente-Psicologia-V2.0`), clique em **Settings** (Definições no topo).
 2. No menu lateral esquerdo, clique em **Pages**.
-3. Em **Build and deployment** > **Source**, selecione:
-   - **GitHub Actions**
-4. É tudo! O GitHub executará automaticamente o fluxo e o site ficará imediatamente publicado em:
-   - `https://<o-seu-utilizador>.github.io/<nome-do-repositorio>/` (ou no seu domínio próprio, se associar um).
+3. Na secção **Build and deployment**:
+   - No menu **Source**, mude de *"Deploy from a branch"* para **GitHub Actions**.
+4. Envie as alterações mais recentes para o GitHub (`git push origin main`). O GitHub Actions compilará e publicará o site automaticamente!
+
+---
+
+### OPÇÃO B (Publicação direta com 1 comando via terminal)
+Caso prefira compilar no seu computador e enviar já pronto:
+```bash
+npm install
+npm run deploy
+```
+Este comando compila o projeto e envia a pasta `dist` pronta para a branch `gh-pages`.
+Depois, nas definições do GitHub Pages (**Settings > Pages**), basta manter **"Deploy from a branch"** e escolher a branch **`gh-pages`** (pasta `/ root`).
 
 ---
 
 ## 🛠️ Comandos Locais de Desenvolvimento
-
-Caso pretenda testar ou compilar localmente:
 
 ```bash
 # Instalar dependências
@@ -39,14 +41,9 @@ npm install
 # Iniciar servidor local
 npm run dev
 
-# Compilar para produção (gera pasta estática ./dist)
+# Compilar para produção (pasta ./dist)
 npm run build
+
+# Publicar diretamente para o GitHub Pages
+npm run deploy
 ```
-
----
-
-## 📋 Funcionalidades Incluídas
-- **100% Autónomo**: Sem necessidade de bases de dados externas, servidores node ou planos de alojamento pagos.
-- **Marcação de Consultas**: Fluxo interativo de marcação com validação de horários e prevenção de sobreposições.
-- **Painel Clínico Reservado**: Gestão de consultas, notas clínicas e estados, protegido por palavra-passe e guardado de forma segura no browser.
-- **Design Responsivo & Identidade**: Tipografia Bellefair + Roboto, paleta com dourado ocre (`#CD8E33`) e cinzento carvão (`#545454`).

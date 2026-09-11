@@ -1,11 +1,22 @@
-import React from 'react';
-import { X, Printer, ShieldCheck, CheckCircle2, FileText, AlertCircle } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { X, Printer, ShieldCheck, CheckCircle2, FileText, AlertCircle, ArrowLeft, Video } from 'lucide-react';
 import { MutuaMenteSymbol } from './MutuaMenteLogo';
 import { useBooking } from '../context/BookingContext';
 import { CLINIC_INFO, SERVICES, SPECIALISTS } from '../data/mockData';
 
 export const InvoiceReceiptModal: React.FC = () => {
   const { selectedBookingForReceipt, setSelectedBookingForReceipt } = useBooking();
+
+  // Close with Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedBookingForReceipt(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setSelectedBookingForReceipt]);
 
   if (!selectedBookingForReceipt) return null;
 
@@ -23,45 +34,55 @@ export const InvoiceReceiptModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 print:p-0 print:bg-white">
-      <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-stone-200 flex flex-col print:border-none print:shadow-none print:max-w-none animate-in fade-in zoom-in-95 duration-200">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          setSelectedBookingForReceipt(null);
+        }
+      }}
+      className="fixed inset-0 z-50 overflow-y-auto bg-stone-950/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 print:p-0 print:bg-white"
+    >
+      <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-stone-200 flex flex-col print:border-none print:shadow-none print:max-w-none animate-in fade-in zoom-in-95 duration-200 my-auto">
         
         {/* Modal Toolbar (hidden when printing) */}
-        <div className="bg-[#1C2C39] text-white px-6 py-4 flex items-center justify-between print:hidden border-b border-[#2A6496]/40">
+        <div className="bg-[#545454] text-white px-6 py-4 flex items-center justify-between print:hidden border-b border-[#CD8E33]/30">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#2A6496] border border-[#C9A84C]/40 text-[#F5EED8] flex items-center justify-center font-bold text-xs">
-              <MutuaMenteSymbol className="w-4 h-4 text-[#C9A84C]" />
+            <div className="w-8 h-8 rounded-xl bg-[#CD8E33] border border-white/20 text-white flex items-center justify-center font-bold text-xs shrink-0">
+              <MutuaMenteSymbol className="w-4 h-4" color="#FFFFFF" />
             </div>
             <div>
               <div className="font-serif-display text-sm font-bold flex items-center gap-2">
                 <span>Dados de Apoio à Emissão de Recibo Verde</span>
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
                   isPaid 
-                    ? 'bg-[#2A6496] text-[#F5EED8] border border-[#C9A84C]/40' 
-                    : 'bg-amber-900/80 text-amber-300 border border-amber-700/50'
+                    ? 'bg-[#CD8E33] text-white' 
+                    : 'bg-amber-800 text-amber-200'
                 }`}>
                   {isPaid ? 'Honorários Liquidados' : 'Pendente de Consulta'}
                 </span>
               </div>
-              <p className="text-[11px] text-stone-400">Minuta clínica com NIF para emissão no Portal das Finanças (AT) e posterior envio ao utente</p>
+              <p className="text-[11px] text-stone-300">Minuta clínica com NIF para emissão na Autoridade Tributária (AT)</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white text-xs font-semibold transition cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#CD8E33] hover:bg-[#B57827] text-white text-xs font-semibold transition cursor-pointer shadow-xs"
             >
-              <Printer className="w-3.5 h-3.5 text-[#C9A84C]" />
-              <span>Imprimir / Guardar PDF</span>
+              <Printer className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Imprimir / PDF</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setSelectedBookingForReceipt(null)}
-              className="p-1.5 text-stone-400 hover:text-white rounded-lg hover:bg-stone-800 transition cursor-pointer"
-              title="Fechar"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-stone-700/90 hover:bg-stone-600 text-white rounded-xl transition cursor-pointer border border-white/10"
+              title="Fechar Janela do Recibo"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
+              <span>Fechar</span>
             </button>
           </div>
         </div>
@@ -297,7 +318,7 @@ export const InvoiceReceiptModal: React.FC = () => {
             
             {/* Visual QR Verification Box */}
             <div className="flex items-center gap-2 bg-stone-50 px-2.5 py-1.5 rounded-lg border border-stone-200 text-stone-600 font-mono text-[9px]">
-              <div className="w-7 h-7 bg-[#1C2C39] text-[#F5EED8] flex items-center justify-center rounded text-[8px] font-bold">
+              <div className="w-7 h-7 bg-[#545454] text-[#FAF3E7] flex items-center justify-center rounded text-[8px] font-bold">
                 QR
               </div>
               <div>
@@ -305,6 +326,27 @@ export const InvoiceReceiptModal: React.FC = () => {
                 <span>{b.referenceCode}</span>
               </div>
             </div>
+          </div>
+
+          {/* Bottom Action Bar (hidden when printing) */}
+          <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3 print:hidden">
+            <button
+              type="button"
+              onClick={() => setSelectedBookingForReceipt(null)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold shadow-xs transition cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar / Fechar Janela</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#CD8E33] hover:bg-[#B57827] text-white text-xs font-semibold shadow-xs transition cursor-pointer"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Imprimir / Guardar PDF</span>
+            </button>
           </div>
 
         </div>

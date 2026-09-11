@@ -16,9 +16,13 @@ import {
   ShieldCheck, 
   Download, 
   Eye,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Check,
+  CalendarCheck,
+  ExternalLink
 } from 'lucide-react';
-import { useBooking, generateEmailContent } from '../context/BookingContext';
+import { useBooking, generateEmailContent, generateGoogleCalendarUrl } from '../context/BookingContext';
 import { SERVICES, SPECIALISTS, CLINIC_INFO } from '../data/mockData';
 import { ServiceId, Modality, PaymentMethod, BookingFormData, Booking } from '../types';
 import { PaymentGateway } from './PaymentGateway';
@@ -29,6 +33,7 @@ export const BookingModal: React.FC = () => {
     isBookingOpen, 
     setIsBookingOpen, 
     selectedServiceForBooking, 
+    selectedModalityForBooking,
     selectedSpecialistForBooking,
     createBooking,
     setSelectedEmailForPreview,
@@ -43,8 +48,9 @@ export const BookingModal: React.FC = () => {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
   // Form State
-  const [serviceId, setServiceId] = useState<ServiceId>('psicologia-adultos');
+  const [serviceId, setServiceId] = useState<ServiceId>('psicologia-clinica');
   const [modality, setModality] = useState<Modality>('presencial');
+  const [copiedMeet, setCopiedMeet] = useState(false);
   const [specialistId, setSpecialistId] = useState<string>('sofia-godinho-cabrita');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -76,7 +82,15 @@ export const BookingModal: React.FC = () => {
       setFormError(null);
       const targetSpecialist = selectedSpecialistForBooking || 'sofia-godinho-cabrita';
       if (selectedServiceForBooking) {
-        setServiceId(selectedServiceForBooking);
+        if (selectedServiceForBooking === 'apoio-online') {
+          setServiceId('psicologia-clinica');
+          setModality('online');
+        } else {
+          setServiceId(selectedServiceForBooking);
+        }
+      }
+      if (selectedModalityForBooking) {
+        setModality(selectedModalityForBooking);
       }
       if (selectedSpecialistForBooking) {
         setSpecialistId(selectedSpecialistForBooking);
@@ -96,7 +110,7 @@ export const BookingModal: React.FC = () => {
       const firstFree = timeSlots.find((s) => !occupied.includes(s));
       setSelectedTime(firstFree || '');
     }
-  }, [isBookingOpen, selectedServiceForBooking, selectedSpecialistForBooking]);
+  }, [isBookingOpen, selectedServiceForBooking, selectedModalityForBooking, selectedSpecialistForBooking]);
 
   if (!isBookingOpen) return null;
 
@@ -290,22 +304,22 @@ export const BookingModal: React.FC = () => {
                 <p className="text-xs text-stone-500">Escolha o serviço mais adequado à sua necessidade atual.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {SERVICES.map((s) => (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {SERVICES.filter((s) => s.id !== 'apoio-online' && (s.id as string) !== 'psicologia-adultos').map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => setServiceId(s.id)}
                     className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
                       serviceId === s.id
-                        ? 'border-[#2A6496] bg-[#E8F1F8]/60 ring-2 ring-[#2A6496]/20'
-                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                        ? 'border-[#CD8E33] bg-[#FAF3E7] ring-2 ring-[#CD8E33]/30'
+                        : 'border-stone-200 hover:border-[#CD8E33]/40 bg-white'
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-xs text-[#2C2822]">{s.title}</span>
-                        <span className="text-xs font-bold text-[#2A6496]">€{s.priceEur}</span>
+                        <span className="text-xs font-bold text-[#CD8E33]">€{s.priceEur}</span>
                       </div>
                       <p className="text-[11px] text-[#6B6560] mt-1 line-clamp-2">{s.shortDesc}</p>
                     </div>
@@ -321,22 +335,22 @@ export const BookingModal: React.FC = () => {
                 <label className="block text-xs font-bold text-[#2C2822] mb-2">
                   Modalidade de Atendimento:
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setModality('presencial')}
                     className={`p-3.5 rounded-2xl border flex items-center gap-3 transition cursor-pointer ${
                       modality === 'presencial'
-                        ? 'border-[#2A6496] bg-[#E8F1F8]/60 ring-2 ring-[#2A6496]/20 text-[#2C2822]'
+                        ? 'border-[#CD8E33] bg-[#FAF3E7] ring-2 ring-[#CD8E33]/30 text-[#2C2822]'
                         : 'border-stone-200 text-stone-700 bg-white hover:bg-stone-50'
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#E8F1F8] text-[#2A6496] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#FAF3E7] text-[#CD8E33] border border-[#E5B468]/40 flex items-center justify-center shrink-0">
                       <MapPin className="w-4 h-4" />
                     </div>
                     <div className="text-left">
                       <div className="text-xs font-bold">Presencial em Lisboa</div>
-                      <div className="text-[10px] text-stone-500">Av. Duque de Ávila 22 (Saldanha)</div>
+                      <div className="text-[10px] text-stone-500">Av. Duque de Ávila 22, Saldanha</div>
                     </div>
                   </button>
 
@@ -345,16 +359,16 @@ export const BookingModal: React.FC = () => {
                     onClick={() => setModality('online')}
                     className={`p-3.5 rounded-2xl border flex items-center gap-3 transition cursor-pointer ${
                       modality === 'online'
-                        ? 'border-[#2A6496] bg-[#E8F1F8]/60 ring-2 ring-[#2A6496]/20 text-[#2C2822]'
+                        ? 'border-[#CD8E33] bg-[#FAF3E7] ring-2 ring-[#CD8E33]/30 text-[#2C2822]'
                         : 'border-stone-200 text-stone-700 bg-white hover:bg-stone-50'
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#E8F1F8] text-[#2A6496] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#FAF3E7] text-[#CD8E33] border border-[#E5B468]/40 flex items-center justify-center shrink-0">
                       <Video className="w-4 h-4" />
                     </div>
                     <div className="text-left">
-                      <div className="text-xs font-bold">Online (Vídeo Seguro)</div>
-                      <div className="text-[10px] text-stone-500">Encriptação ponto a ponto</div>
+                      <div className="text-xs font-bold">Online</div>
+                      <div className="text-[10px] text-stone-500">Videoconsulta via Google Meet</div>
                     </div>
                   </button>
                 </div>
@@ -458,13 +472,37 @@ export const BookingModal: React.FC = () => {
               </div>
 
               {/* Available Slots */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
+              <div className="space-y-3">
+                {/* Google Calendar Sync Indicator */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-[#FAF3E7] border border-[#E5B468]/50 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span className="font-semibold text-stone-800">
+                      Sincronizado com Google Calendar ({currentSpecialist.name.split(' ')[1] || 'Terapeuta'})
+                    </span>
+                  </div>
+                  {/* Visual Legend */}
+                  <div className="flex items-center gap-3 text-[11px] text-stone-600">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>Livre ({Math.max(0, timeSlots.length - occupiedSlots.length)})</span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                      <span>Ocupado ({occupiedSlots.length})</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
                   <label className="block text-xs font-bold text-[#2C2822]">
-                    Horários ({selectedDate}):
+                    Horários para {selectedDate}:
                   </label>
                   <span className="text-[11px] font-medium text-stone-500">
-                    {Math.max(0, timeSlots.length - occupiedSlots.length)} de {timeSlots.length} vagas livres
+                    {Math.max(0, timeSlots.length - occupiedSlots.length)} de {timeSlots.length} horários livres
                   </span>
                 </div>
 
@@ -495,14 +533,14 @@ export const BookingModal: React.FC = () => {
                           }}
                           className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition text-center flex flex-col items-center justify-center gap-0.5 relative ${
                             isOccupied
-                              ? 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed opacity-80'
+                              ? 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed opacity-75'
                               : isSelected
-                              ? 'border-[#2A6496] bg-[#2A6496] text-white shadow-xs cursor-pointer'
-                              : 'border-stone-200 bg-white text-stone-700 hover:border-[#2A6496]/50 hover:bg-[#E8F1F8]/50 cursor-pointer'
+                              ? 'border-[#CD8E33] bg-[#CD8E33] text-white shadow-xs cursor-pointer'
+                              : 'border-stone-200 bg-white text-stone-700 hover:border-[#CD8E33]/60 hover:bg-[#FAF3E7]/50 cursor-pointer'
                           }`}
                         >
                           <div className="flex items-center gap-1.5">
-                            <Clock className={`w-3.5 h-3.5 ${isOccupied ? 'text-stone-400' : isSelected ? 'text-white' : 'text-stone-500'}`} />
+                            <Clock className={`w-3.5 h-3.5 ${isOccupied ? 'text-stone-400' : isSelected ? 'text-white' : 'text-[#CD8E33]'}`} />
                             <span className={isOccupied ? 'line-through text-stone-400' : ''}>{slot}</span>
                           </div>
                           {isOccupied ? (
@@ -510,7 +548,7 @@ export const BookingModal: React.FC = () => {
                               Ocupado
                             </span>
                           ) : (
-                            <span className={`text-[9px] font-medium ${isSelected ? 'text-[#F5EED8]' : 'text-[#2A6496]'}`}>
+                            <span className={`text-[9px] font-medium ${isSelected ? 'text-white/90' : 'text-emerald-600'}`}>
                               Disponível
                             </span>
                           )}
@@ -803,14 +841,72 @@ export const BookingModal: React.FC = () => {
                 </div>
               )}
 
-              {/* Automated Actions: View Email, Add to Calendar */}
+              {/* Google Meet Room Card for Online Consultations */}
+              {confirmedBooking.modality === 'online' && confirmedBooking.meetingUrl && (
+                <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 text-left space-y-2.5 max-w-lg mx-auto shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sky-950 font-bold text-xs">
+                      <Video className="w-4 h-4 text-sky-600" />
+                      <span>Link da Videoconsulta Google Meet</span>
+                    </div>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-300">
+                      Google Meet
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-sky-800 leading-relaxed">
+                    A sua sessão de psicologia decorrerá por Google Meet. O link seguro de acesso foi gerado e enviado para <strong>{confirmedBooking.client.email}</strong>:
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                    <div className="flex-1 px-3 py-2 bg-white rounded-xl border border-sky-200 text-xs font-mono text-sky-950 truncate select-all">
+                      {confirmedBooking.meetingUrl}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirmedBooking.meetingUrl) {
+                            navigator.clipboard.writeText(confirmedBooking.meetingUrl);
+                            setCopiedMeet(true);
+                            setTimeout(() => setCopiedMeet(false), 2500);
+                          }
+                        }}
+                        className="px-3 py-2 rounded-xl bg-white hover:bg-sky-100 text-sky-900 border border-sky-300 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        {copiedMeet ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-sky-700" />}
+                        <span>{copiedMeet ? 'Copiado!' : 'Copiar'}</span>
+                      </button>
+                      <a
+                        href={confirmedBooking.meetingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-2 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Abrir Sala</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Automated Actions: View Email, Add to Google Calendar, Download .ics */}
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <a
+                  href={generateGoogleCalendarUrl(confirmedBooking, currentService.title, currentSpecialist.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-[#CD8E33] hover:bg-[#B57827] text-white text-xs font-semibold shadow-xs transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <CalendarCheck className="w-4 h-4" />
+                  <span>Adicionar ao Google Calendar</span>
+                </a>
+
                 <button
                   type="button"
                   onClick={handlePreviewEmail}
-                  className="px-4 py-2.5 rounded-xl bg-[#E8F1F8] text-[#2A6496] hover:bg-[#D4E6F4] border border-[#B0D0EB] text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2.5 rounded-xl bg-[#FAF3E7] text-[#CD8E33] hover:bg-[#F3E5CD] border border-[#E5B468]/50 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
                 >
-                  <Eye className="w-4 h-4 text-[#2A6496]" />
+                  <Eye className="w-4 h-4 text-[#CD8E33]" />
                   <span>Ver Email de Confirmação</span>
                 </button>
 
@@ -820,7 +916,7 @@ export const BookingModal: React.FC = () => {
                   className="px-4 py-2.5 rounded-xl bg-white text-stone-700 hover:bg-stone-50 border border-stone-200 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
                 >
                   <Download className="w-4 h-4 text-stone-500" />
-                  <span>Adicionar ao Calendário (.ics)</span>
+                  <span>Calendário (.ics)</span>
                 </button>
               </div>
 

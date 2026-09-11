@@ -23,11 +23,11 @@ export async function sendBookingConfirmationEmail(booking: Booking): Promise<Se
   const isOnline = booking.modality === 'online';
 
   const modalityLabel = isOnline 
-    ? 'Online (Videoconsulta Segura)' 
+    ? 'Online' 
     : `Presencial em Lisboa (${CLINIC_INFO.address.street})`;
 
   const locationText = isOnline
-    ? (booking.meetingUrl || 'Gabinete Virtual Encriptado')
+    ? (booking.meetingUrl || 'Videoconsulta Google Meet')
     : `${CLINIC_INFO.address.street}, ${CLINIC_INFO.address.postalCode} ${CLINIC_INFO.address.city} (${CLINIC_INFO.address.metro})`;
 
   const paymentLabel = booking.paymentMethod === 'pos_consulta'
@@ -45,7 +45,7 @@ Detalhes da Marcação:
 • Modalidade: ${modalityLabel}
 • Referência de Marcação: ${booking.referenceCode}
 • Honorários: €${booking.priceEur}.00 (${paymentLabel})
-${isOnline && booking.meetingUrl ? `• Gabinete Virtual: ${booking.meetingUrl}\n` : ''}
+${isOnline && booking.meetingUrl ? `• Link do Google Meet: ${booking.meetingUrl}\n(Basta clicar no link no dia e hora da consulta para aceder à sala virtual)\n` : ''}
 Localização do Consultório: ${CLINIC_INFO.address.street}, ${CLINIC_INFO.address.postalCode} Lisboa
 Contactos: Tel. ${CLINIC_INFO.phoneFormatted} | Email: ${CLINIC_INFO.email} | Site: ${CLINIC_INFO.websiteFormatted}
 
@@ -90,6 +90,7 @@ Nota: O Recibo Verde oficial (com dedução à coleta no IRS como Despesa de Sa�
     modality: modalityLabel,
     location: locationText,
     meeting_url: booking.meetingUrl || '',
+    google_meet_url: booking.meetingUrl || '',
     reference_code: booking.referenceCode,
     booking_ref: booking.referenceCode,
     ref: booking.referenceCode,

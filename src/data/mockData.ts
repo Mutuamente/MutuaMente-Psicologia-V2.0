@@ -13,9 +13,10 @@ export const CLINIC_INFO = {
   phoneFormatted: '965 197 069',
   whatsappUrl: 'https://wa.me/351965197069?text=Ol%C3%A1%2C%20gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20as%20consultas%20na%20MutuaMente.',
   instagram: '@mutuamente.psicologia',
-  instagramUrl: 'https://instagram.com',
+  instagramUrl: 'https://www.instagram.com/mutuamente.psicologia',
+  facebook: 'MutuaMente Psicologia',
+  facebookUrl: 'https://www.facebook.com/mutuamentepsicologia',
   linkedinUrl: 'https://linkedin.com',
-  spotifyUrl: 'https://spotify.com',
   address: {
     street: 'Av. Duque de Ávila 22',
     postalCode: '1000-141',
@@ -157,42 +158,20 @@ export const SERVICES: Service[] = [
     ]
   },
   {
-    id: 'psicologia-adultos',
-    title: 'Psicoterapia Individual de Adultos',
-    titleEn: 'Adult Individual Psychotherapy',
-    shortDesc: 'Acompanhamento clínico continuado focado na regulação emocional e autoconhecimento profundo.',
-    shortDescEn: 'Ongoing clinical psychotherapy focused on emotional regulation and deep self-awareness.',
-    fullDesc: 'Atendimento centrado no modelo de referência psicanalítico, acolhendo ansiedades, depressão, impasses e o desenvolvimento de novas perspetivas de vida.',
-    fullDescEn: 'Individual psychotherapy centered on psychoanalytic dynamic framework for emotional balance.',
-    durationMinutes: 50,
-    priceEur: 65,
-    targetAudience: 'Adultos (>18 anos)',
-    targetAudienceEn: 'Adults (18+)',
-    iconName: 'UserCheck',
-    suitableFor: [
-      'Ansiedade e ataques de pânico',
-      'Tristeza persistente e desânimo',
-      'Exaustão laboral e gestão do estresse'
-    ],
-    suitableForEn: [
-      'Anxiety and panic',
-      'Depression and low mood',
-      'Burnout and work stress'
-    ]
-  },
-  {
     id: 'apoio-online',
-    title: 'Consultas Online (Videoconsulta Segura)',
-    titleEn: 'Online Therapy (Secure Telepsychology)',
+    title: 'Consultas Online',
+    titleEn: 'Online Consultations',
     shortDesc: 'A mesma qualidade e rigor clínico no conforto da sua casa ou onde estiver.',
     shortDescEn: 'The same clinical quality and safety from the comfort of your home.',
-    fullDesc: 'Sessões por videoconferência encriptada de ponta a ponta com a Dra. Sofia Godinho Cabrita, facilitando o acesso a residentes em qualquer parte de Portugal e no estrangeiro.',
+    fullDesc: 'Sessões por videoconferência encriptada com a Dra. Sofia Godinho Cabrita, facilitando o acesso a residentes em qualquer parte de Portugal e no estrangeiro.',
     fullDescEn: 'Encrypted telepsychology sessions conducted by Dr. Sofia Godinho Cabrita for clients worldwide.',
     durationMinutes: 50,
     priceEur: 65,
     targetAudience: 'Adultos e Jovens (Nacional e Internacional)',
     targetAudienceEn: 'Adults & Youths (Worldwide)',
     iconName: 'Video',
+    badge: 'Videoconsulta',
+    badgeEn: 'Online Session',
     suitableFor: [
       'Residentes fora de Lisboa ou no estrangeiro',
       'Necessidade de flexibilidade de horários',
