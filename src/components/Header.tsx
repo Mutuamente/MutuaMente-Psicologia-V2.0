@@ -32,7 +32,6 @@ export const Header: React.FC = () => {
 
   const navLinks = [
     { href: '#servicos', label: currentLanguage === 'pt' ? 'Serviços' : 'Services' },
-    { href: '#acordos-precos', label: currentLanguage === 'pt' ? 'Acordos & Parcerias' : 'Partnerships' },
     { href: '#quando-procurar', label: currentLanguage === 'pt' ? 'Quando Procurar' : 'When to Seek' },
     { href: '#sobre', label: currentLanguage === 'pt' ? 'O MutuaMente' : 'About Us' },
     { href: '#equipa', label: currentLanguage === 'pt' ? 'Dra. Sofia Cabrita' : 'Dr. Sofia Cabrita' },

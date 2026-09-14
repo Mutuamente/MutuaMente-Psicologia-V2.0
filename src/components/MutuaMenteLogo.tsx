@@ -59,29 +59,29 @@ export const MutuaMenteLogo: React.FC<MutuaMenteLogoProps> = ({
   withBadge = true,
   variant = 'default'
 }) => {
-  // Dimension mappings
+  // Dimension mappings (icon sized generously inside circular badge)
   const dimensions = {
     sm: {
       badge: 'w-8 h-8',
-      symbol: 'w-5 h-5',
+      symbol: 'w-6 h-6',
       title: 'text-lg',
       sub: 'text-[9px]'
     },
     md: {
       badge: 'w-11 h-11',
-      symbol: 'w-7 h-7',
+      symbol: 'w-8.5 h-8.5 sm:w-8 sm:h-8',
       title: 'text-2xl',
       sub: 'text-[11px]'
     },
     lg: {
       badge: 'w-14 h-14',
-      symbol: 'w-9 h-9',
+      symbol: 'w-11 h-11',
       title: 'text-3xl',
       sub: 'text-xs'
     },
     xl: {
       badge: 'w-24 h-24',
-      symbol: 'w-16 h-16',
+      symbol: 'w-19 h-19',
       title: 'text-4xl',
       sub: 'text-sm'
     }

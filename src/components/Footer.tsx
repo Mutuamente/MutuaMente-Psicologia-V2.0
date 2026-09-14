@@ -60,6 +60,15 @@ export const Footer: React.FC = () => {
                 <Instagram className="w-4 h-4" />
               </a>
               <a
+                href={CLINIC_INFO.facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-8 h-8 rounded-lg bg-stone-900 hover:bg-[#CD8E33] text-stone-400 hover:text-white flex items-center justify-center transition border border-stone-800 font-bold text-xs"
+                title="Facebook"
+              >
+                f
+              </a>
+              <a
                 href={CLINIC_INFO.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -80,7 +89,6 @@ export const Footer: React.FC = () => {
               <li><a href="#servicos" className="hover:text-[#CD8E33] transition">Consulta de Psicologia Clínica</a></li>
               <li><a href="#servicos" className="hover:text-[#CD8E33] transition">Avaliação Psicológica</a></li>
               <li><a href="#servicos" className="hover:text-[#CD8E33] transition">Consultoria de Recursos Humanos</a></li>
-              <li><a href="#acordos-precos" className="hover:text-[#CD8E33] transition">Acordos / Allianz (10% Desc.)</a></li>
               <li><a href="#quando-procurar" className="hover:text-[#CD8E33] transition">Quando Procurar Psicólogo?</a></li>
               <li><a href="#sobre" className="hover:text-[#CD8E33] transition">Sobre o MutuaMente</a></li>
             </ul>

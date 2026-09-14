@@ -155,8 +155,8 @@ export const ServicesSection: React.FC = () => {
                       <Clock className="w-3.5 h-3.5 text-[#CD8E33]" />
                       <span>{service.durationMinutes} minutos</span>
                     </div>
-                    <span className="text-[11px] text-[#545454]/70 block mt-0.5">
-                      Presencial ou Online
+                    <span className="text-[11px] text-[#545454]/80 block mt-0.5">
+                      Presencial ou Online • 10€ de desconto em videoconsulta
                     </span>
                   </div>
 

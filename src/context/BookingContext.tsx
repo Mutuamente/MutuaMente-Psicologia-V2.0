@@ -2,6 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Booking, BookingFormData, EmailNotification, ServiceId } from '../types';
 import { INITIAL_BOOKINGS, SERVICES, SPECIALISTS, CLINIC_INFO } from '../data/mockData';
 import { sendBookingConfirmationEmail } from '../services/emailService';
+import { db } from '../lib/firebase';
+import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { 
+  initAuth, 
+  googleSignIn, 
+  logoutGoogle, 
+  createGoogleCalendarEvent, 
+  deleteGoogleCalendarEvent,
+  getAccessToken 
+} from '../services/googleCalendarService';
+import { User } from 'firebase/auth';
 
 interface BookingContextType {
   bookings: Booking[];
@@ -37,6 +48,13 @@ interface BookingContextType {
   logoutClinical: () => void;
   updateClinicalPassword: (oldPass: string, newPass: string) => { success: boolean; error?: string };
   openClinicalDashboard: () => void;
+  // Google Calendar Integration
+  isCalendarConnected: boolean;
+  calendarUser: User | null;
+  isCalendarLoading: boolean;
+  connectGoogleCalendar: () => Promise<boolean>;
+  disconnectGoogleCalendar: () => Promise<void>;
+  syncBookingWithCalendar: (bookingId: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
@@ -324,6 +342,125 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [bookings]);
 
+  // Real-time synchronization with Cloud Firestore across all devices and incognito windows
+  useEffect(() => {
+    try {
+      const unsub = onSnapshot(collection(db, 'bookings'), (snapshot) => {
+        if (!snapshot.empty) {
+          const cloudBookings: Booking[] = [];
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data() as Booking;
+            if (data && data.id) {
+              cloudBookings.push(data);
+            }
+          });
+          if (cloudBookings.length > 0) {
+            setBookings(deduplicateAndSanitizeBookings(cloudBookings));
+          }
+        }
+      }, (err) => {
+        console.warn('Firestore snapshot listener:', err);
+      });
+      return () => unsub();
+    } catch (e) {
+      console.warn('Could not attach Firestore listener:', e);
+    }
+  }, []);
+
+  // Google Calendar Integration State & Auth Listener
+  const [calendarUser, setCalendarUser] = useState<User | null>(null);
+  const [calendarToken, setCalendarToken] = useState<string | null>(null);
+  const [isCalendarLoading, setIsCalendarLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const unsub = initAuth(
+      (user, token) => {
+        setCalendarUser(user);
+        setCalendarToken(token);
+      },
+      () => {
+        setCalendarUser(null);
+        setCalendarToken(null);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  const connectGoogleCalendar = async (): Promise<boolean> => {
+    setIsCalendarLoading(true);
+    try {
+      const result = await googleSignIn();
+      if (result) {
+        setCalendarUser(result.user);
+        setCalendarToken(result.accessToken);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Erro ao autenticar com Google Calendar:', err);
+      return false;
+    } finally {
+      setIsCalendarLoading(false);
+    }
+  };
+
+  const disconnectGoogleCalendar = async (): Promise<void> => {
+    try {
+      await logoutGoogle();
+      setCalendarUser(null);
+      setCalendarToken(null);
+    } catch (err) {
+      console.error('Erro ao terminar sessão Google Calendar:', err);
+    }
+  };
+
+  const syncBookingWithCalendar = async (bookingId: string): Promise<{ success: boolean; error?: string }> => {
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (!booking) return { success: false, error: 'Marcação não encontrada.' };
+
+    let token = calendarToken || getAccessToken();
+    if (!token) {
+      const connected = await connectGoogleCalendar();
+      if (!connected) {
+        return { success: false, error: 'Por favor inicie sessão com o Google da terapeuta para sincronizar com a agenda.' };
+      }
+      token = getAccessToken();
+    }
+
+    if (!token) {
+      return { success: false, error: 'Token de autorização Google não obtido.' };
+    }
+
+    try {
+      const result = await createGoogleCalendarEvent(booking, token);
+      const updatedBooking: Booking = {
+        ...booking,
+        calendarEventId: result.eventId,
+        calendarHtmlLink: result.htmlLink,
+        calendarSynced: true,
+        meetingUrl: result.meetLink || booking.meetingUrl
+      };
+
+      setBookings((prev) => prev.map((b) => (b.id === bookingId ? updatedBooking : b)));
+
+      try {
+        await updateDoc(doc(db, 'bookings', bookingId), {
+          calendarEventId: result.eventId,
+          calendarHtmlLink: result.htmlLink,
+          calendarSynced: true,
+          meetingUrl: result.meetLink || booking.meetingUrl
+        });
+      } catch (err) {
+        console.warn('Firestore update sync error:', err);
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('Erro ao sincronizar marcação no Google Calendar:', err);
+      return { success: false, error: err?.message || 'Erro ao comunicar com Google Calendar' };
+    }
+  };
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_EMAILS_KEY, JSON.stringify(emailNotifications));
@@ -425,6 +562,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const meetingUrl = isOnline ? `https://meet.google.com/${meet1}-${meet2}-${meet3}` : undefined;
     const locationAddress = isOnline ? undefined : CLINIC_INFO.address.street + ', ' + CLINIC_INFO.address.city;
 
+    const basePrice = service?.priceEur || 65;
+    const finalPrice = isOnline ? Math.max(0, basePrice - 10) : basePrice;
+
     const newBooking: Booking = {
       id: `bk-${Date.now()}`,
       referenceCode,
@@ -435,7 +575,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       date: formData.date,
       time: formData.time,
       durationMinutes: service?.durationMinutes || 50,
-      priceEur: service?.priceEur || 65,
+      priceEur: finalPrice,
       status: formData.paymentMethod === 'multibanco' ? 'pendente_pagamento' : 'confirmada',
       paymentMethod: formData.paymentMethod,
       paymentStatus: (formData.paymentMethod === 'multibanco' || formData.paymentMethod === 'pos_consulta') ? 'pendente' : 'pago',
@@ -459,8 +599,35 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       reminderSent: false
     };
 
+    // If the therapist is currently connected to Google Calendar, automatically create the event with Google Meet link
+    const currentCalToken = calendarToken || getAccessToken();
+    if (currentCalToken) {
+      try {
+        const calResult = await createGoogleCalendarEvent(newBooking, currentCalToken);
+        if (calResult.eventId) {
+          newBooking.calendarEventId = calResult.eventId;
+          newBooking.calendarHtmlLink = calResult.htmlLink;
+          newBooking.calendarSynced = true;
+          if (calResult.meetLink) {
+            newBooking.meetingUrl = calResult.meetLink;
+          }
+        }
+      } catch (calErr) {
+        console.warn('Erro ao sincronizar automaticamente com Google Calendar:', calErr);
+      }
+    }
+
     // Update state
     setBookings((prev) => [newBooking, ...prev]);
+
+    // Persist to Cloud Firestore so it is accessible across all devices and browsers
+    try {
+      setDoc(doc(db, 'bookings', newBooking.id), newBooking).catch((err) => {
+        console.warn('Firestore setDoc booking error:', err);
+      });
+    } catch (err) {
+      console.warn('Firestore setDoc error:', err);
+    }
 
     // Automatically generate and record the email notification
     const emailNotif = generateEmailContent(newBooking);
@@ -475,10 +642,10 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateBookingStatus = (bookingId: string, status: Booking['status']) => {
+    const isPaid = status === 'confirmada' || status === 'concluida';
     setBookings((prev) =>
       prev.map((b) => {
         if (b.id === bookingId) {
-          const isPaid = status === 'confirmada' || status === 'concluida';
           return {
             ...b,
             status,
@@ -488,12 +655,33 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return b;
       })
     );
+
+    try {
+      updateDoc(doc(db, 'bookings', bookingId), {
+        status,
+        paymentStatus: isPaid ? 'pago' : 'pendente'
+      }).catch((err) => {
+        console.warn('Firestore updateBookingStatus error:', err);
+      });
+    } catch (err) {
+      console.warn('Firestore updateBookingStatus error:', err);
+    }
   };
 
   const updateClinicalNotes = (bookingId: string, notes: string) => {
     setBookings((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, clinicalNotes: notes } : b))
     );
+
+    try {
+      updateDoc(doc(db, 'bookings', bookingId), {
+        clinicalNotes: notes
+      }).catch((err) => {
+        console.warn('Firestore updateClinicalNotes error:', err);
+      });
+    } catch (err) {
+      console.warn('Firestore updateClinicalNotes error:', err);
+    }
   };
 
   const resendBookingEmail = (bookingId: string) => {
@@ -511,8 +699,35 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
-  const deleteBooking = (bookingId: string) => {
+  const deleteBooking = async (bookingId: string) => {
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (!booking) return;
+
+    const confirmed = window.confirm(
+      `Tem a certeza de que pretende eliminar a marcação de ${booking.client.name} (${booking.date} às ${booking.time})? ${
+        booking.calendarEventId ? 'O evento associado no Google Calendar da terapeuta também será cancelado.' : ''
+      }`
+    );
+    if (!confirmed) return;
+
+    const currentCalToken = calendarToken || getAccessToken();
+    if (booking.calendarEventId && currentCalToken) {
+      try {
+        await deleteGoogleCalendarEvent(booking.calendarEventId, currentCalToken);
+      } catch (err) {
+        console.warn('Erro ao cancelar evento no Google Calendar:', err);
+      }
+    }
+
     setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+
+    try {
+      deleteDoc(doc(db, 'bookings', bookingId)).catch((err) => {
+        console.warn('Firestore deleteBooking error:', err);
+      });
+    } catch (err) {
+      console.warn('Firestore deleteBooking error:', err);
+    }
   };
 
   return (
@@ -548,7 +763,13 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         authenticateClinical,
         logoutClinical,
         updateClinicalPassword,
-        openClinicalDashboard
+        openClinicalDashboard,
+        isCalendarConnected: !!calendarUser && !!(calendarToken || getAccessToken()),
+        calendarUser,
+        isCalendarLoading,
+        connectGoogleCalendar,
+        disconnectGoogleCalendar,
+        syncBookingWithCalendar
       }}
     >
       {children}

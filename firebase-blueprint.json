@@ -1,0 +1,32 @@
+{
+  "entities": {
+    "booking": {
+      "title": "Booking",
+      "description": "Appointment booking record for MutuaMente Psicologia clinic",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "referenceCode": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "modality": { "type": "string" },
+        "specialistId": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "durationMinutes": { "type": "number" },
+        "priceEur": { "type": "number" },
+        "status": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "meetingUrl": { "type": "string" }
+      },
+      "required": ["id", "referenceCode", "serviceId", "specialistId", "date", "time", "priceEur", "status"]
+    }
+  },
+  "firestore": {
+    "/bookings/{bookingId}": {
+      "schema": "booking",
+      "description": "Public appointment reservations and therapist management records"
+    }
+  }
+}

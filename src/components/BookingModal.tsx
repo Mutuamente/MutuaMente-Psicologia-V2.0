@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, 
   Calendar as CalendarIcon, 
@@ -20,7 +20,10 @@ import {
   Copy,
   Check,
   CalendarCheck,
-  ExternalLink
+  ExternalLink,
+  Sun,
+  Sunset,
+  Info
 } from 'lucide-react';
 import { useBooking, generateEmailContent, generateGoogleCalendarUrl } from '../context/BookingContext';
 import { SERVICES, SPECIALISTS, CLINIC_INFO } from '../data/mockData';
@@ -30,6 +33,7 @@ import { MutuaMenteSymbol } from './MutuaMenteLogo';
 
 export const BookingModal: React.FC = () => {
   const { 
+    bookings,
     isBookingOpen, 
     setIsBookingOpen, 
     selectedServiceForBooking, 
@@ -44,8 +48,8 @@ export const BookingModal: React.FC = () => {
     isClientDoubleBooked
   } = useBooking();
 
-  // Wizard Steps: 1: Service/Modality, 2: Specialist, 3: Date/Time, 4: Client Info, 5: Payment, 6: Success
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  // Streamlined Wizard Steps: 1: Especialidade & Terapeuta, 2: Horário & Vagas, 3: Seus Dados, 4: Pagamento, 5: Sucesso
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
   // Form State
   const [serviceId, setServiceId] = useState<ServiceId>('psicologia-clinica');
@@ -70,17 +74,67 @@ export const BookingModal: React.FC = () => {
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Available time slots based on morning and afternoon
-  const timeSlots = ['09:00', '10:30', '12:00', '14:30', '16:00', '17:30', '19:00'];
+  // Available standard appointment time slots
+  const morningSlots = ['09:00', '10:30', '12:00'];
+  const afternoonSlots = ['14:30', '16:00', '17:30', '19:00'];
+  const timeSlots = useMemo(() => [...morningSlots, ...afternoonSlots], []);
 
   // Current occupied slots for the selected specialist and date
-  const occupiedSlots = selectedDate ? getOccupiedSlotsForDate(specialistId, selectedDate) : [];
+  const occupiedSlots = useMemo(() => {
+    return selectedDate ? getOccupiedSlotsForDate(specialistId, selectedDate) : [];
+  }, [specialistId, selectedDate, getOccupiedSlotsForDate, bookings]);
+
+  // Current specialist & service details
+  const currentService = SERVICES.find((s) => s.id === serviceId) || SERVICES[0];
+  const currentSpecialist = SPECIALISTS.find((s) => s.id === specialistId) || SPECIALISTS[0];
+  const effectivePrice = modality === 'online' ? Math.max(0, currentService.priceEur - 10) : currentService.priceEur;
+
+  // Calculate session end time based on duration
+  const getSlotEndTime = (startTime: string, durationMinutes: number = 50) => {
+    const [h, m] = startTime.split(':').map(Number);
+    const totalMins = h * 60 + m + durationMinutes;
+    const endH = Math.floor(totalMins / 60) % 24;
+    const endM = totalMins % 60;
+    return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+  };
+
+  // Generate the next 7 available clinic days with slot availability summary
+  const upcomingDays = useMemo(() => {
+    const days = [];
+    const base = new Date();
+    for (let i = 1; i <= 14; i++) {
+      const d = new Date();
+      d.setDate(base.getDate() + i);
+      // Skip Sundays (clinic is closed)
+      if (d.getDay() === 0) continue;
+      
+      const dateStr = d.toISOString().split('T')[0];
+      const occupied = getOccupiedSlotsForDate(specialistId, dateStr);
+      const freeCount = Math.max(0, timeSlots.length - occupied.length);
+      const dayName = d.toLocaleDateString('pt-PT', { weekday: 'short' });
+      const dayNum = d.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+      
+      days.push({
+        dateStr,
+        dayName: dayName.charAt(0).toUpperCase() + dayName.slice(1).replace('.', ''),
+        dayNum,
+        freeCount,
+        totalCount: timeSlots.length,
+        isFullyBooked: freeCount === 0
+      });
+      if (days.length === 7) break;
+    }
+    return days;
+  }, [specialistId, bookings, timeSlots, getOccupiedSlotsForDate]);
 
   // Sync props when modal opens
   useEffect(() => {
     if (isBookingOpen) {
       setFormError(null);
+      setStep(1);
       const targetSpecialist = selectedSpecialistForBooking || 'sofia-godinho-cabrita';
+      setSpecialistId(targetSpecialist);
+
       if (selectedServiceForBooking) {
         if (selectedServiceForBooking === 'apoio-online') {
           setServiceId('psicologia-clinica');
@@ -92,9 +146,7 @@ export const BookingModal: React.FC = () => {
       if (selectedModalityForBooking) {
         setModality(selectedModalityForBooking);
       }
-      if (selectedSpecialistForBooking) {
-        setSpecialistId(selectedSpecialistForBooking);
-      }
+
       // Pick tomorrow as default date
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -110,12 +162,9 @@ export const BookingModal: React.FC = () => {
       const firstFree = timeSlots.find((s) => !occupied.includes(s));
       setSelectedTime(firstFree || '');
     }
-  }, [isBookingOpen, selectedServiceForBooking, selectedModalityForBooking, selectedSpecialistForBooking]);
+  }, [isBookingOpen, selectedServiceForBooking, selectedModalityForBooking, selectedSpecialistForBooking, timeSlots, getOccupiedSlotsForDate]);
 
   if (!isBookingOpen) return null;
-
-  const currentService = SERVICES.find((s) => s.id === serviceId) || SERVICES[0];
-  const currentSpecialist = SPECIALISTS.find((s) => s.id === specialistId) || SPECIALISTS[0];
 
   const handleDateChange = (newDate: string) => {
     setSelectedDate(newDate);
@@ -133,15 +182,15 @@ export const BookingModal: React.FC = () => {
       return;
     }
     if (!selectedTime) {
-      setFormError('Não existem vagas disponíveis para esta data. Por favor escolha outro dia.');
+      setFormError('Não existem vagas disponíveis para esta data. Por favor escolha outro dia no calendário.');
       return;
     }
     if (isSlotOccupied(specialistId, selectedDate, selectedTime, currentService.durationMinutes)) {
-      setFormError('O horário selecionado já se encontra reservado. Por favor selecione outra vaga.');
+      setFormError('O horário selecionado já se encontra reservado na agenda da clínica. Por favor selecione outra vaga.');
       return;
     }
     setFormError(null);
-    setStep(4);
+    setStep(3);
   };
 
   const handleNextFromClientInfo = (e: React.FormEvent) => {
@@ -157,7 +206,7 @@ export const BookingModal: React.FC = () => {
     // Check if slot is still available
     if (isSlotOccupied(specialistId, selectedDate, selectedTime, currentService.durationMinutes)) {
       setFormError(`O horário das ${selectedTime} no dia ${selectedDate} já se encontra reservado. Por favor selecione outro horário.`);
-      setStep(3);
+      setStep(2);
       return;
     }
     // Check if client is already double booked at this exact time
@@ -167,7 +216,7 @@ export const BookingModal: React.FC = () => {
     }
 
     setFormError(null);
-    setStep(5);
+    setStep(4);
   };
 
   const handlePaymentComplete = async (paymentDetails: any) => {
@@ -195,10 +244,10 @@ export const BookingModal: React.FC = () => {
 
       const booking = await createBooking(formData);
       setConfirmedBooking(booking);
-      setStep(6);
+      setStep(5);
     } catch (err: any) {
       setFormError(err?.message || 'Este horário já não se encontra disponível. Por favor selecione outra data ou vaga.');
-      setStep(3); // Return user to step 3 so they can pick a free slot
+      setStep(2); // Return user to step 2 so they can pick a free slot
     } finally {
       setIsSubmitting(false);
     }
@@ -265,38 +314,37 @@ export const BookingModal: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-[#E8D5A0]/80 mt-0.5">
-              {step === 6 ? 'Consulta Confirmada com Sucesso' : `Passo ${step} de 5: Marcação de Consulta`}
+              {step === 5 ? 'Consulta Confirmada com Sucesso' : `Passo ${step} de 4: Marcação de Consulta`}
             </p>
           </div>
 
           <button
             onClick={() => setIsBookingOpen(false)}
             className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            aria-label="Fechar janela"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Step Progress Indicator (Steps 1-5) */}
-        {step <= 5 && (
+        {/* Step Progress Indicator (Steps 1-4) */}
+        {step <= 4 && (
           <div className="bg-[#FDFBF7] px-6 py-2.5 border-b border-[#E8D5A0]/60">
             <div className="flex items-center justify-between text-[11px] font-semibold text-stone-500">
-              <span className={step >= 1 ? 'text-[#2A6496] font-bold' : ''}>1. Especialidade</span>
+              <span className={step >= 1 ? 'text-[#2A6496] font-bold' : ''}>1. Especialidade & Terapeuta</span>
               <span>→</span>
-              <span className={step >= 2 ? 'text-[#2A6496] font-bold' : ''}>2. Dra. Sofia Cabrita</span>
+              <span className={step >= 2 ? 'text-[#2A6496] font-bold' : ''}>2. Horários & Vagas</span>
               <span>→</span>
-              <span className={step >= 3 ? 'text-[#2A6496] font-bold' : ''}>3. Horário</span>
+              <span className={step >= 3 ? 'text-[#2A6496] font-bold' : ''}>3. Seus Dados</span>
               <span>→</span>
-              <span className={step >= 4 ? 'text-[#2A6496] font-bold' : ''}>4. Dados</span>
-              <span>→</span>
-              <span className={step >= 5 ? 'text-[#2A6496] font-bold' : ''}>5. Pagamento</span>
+              <span className={step >= 4 ? 'text-[#2A6496] font-bold' : ''}>4. Pagamento</span>
             </div>
           </div>
         )}
 
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
-          {/* STEP 1: SERVICE & MODALITY */}
+          {/* STEP 1: SERVICE, MODALITY & CLINICIAN REASSURANCE */}
           {step === 1 && (
             <div className="space-y-5">
               <div>
@@ -304,6 +352,7 @@ export const BookingModal: React.FC = () => {
                 <p className="text-xs text-stone-500">Escolha o serviço mais adequado à sua necessidade atual.</p>
               </div>
 
+              {/* 3 Core Services */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {SERVICES.filter((s) => s.id !== 'apoio-online' && (s.id as string) !== 'psicologia-adultos').map((s) => (
                   <button
@@ -330,7 +379,7 @@ export const BookingModal: React.FC = () => {
                 ))}
               </div>
 
-              {/* Modality Choice */}
+              {/* Modality Choice with -10€ discount on Google Meet */}
               <div className="pt-2">
                 <label className="block text-xs font-bold text-[#2C2822] mb-2">
                   Modalidade de Atendimento:
@@ -367,143 +416,159 @@ export const BookingModal: React.FC = () => {
                       <Video className="w-4 h-4" />
                     </div>
                     <div className="text-left">
-                      <div className="text-xs font-bold">Online</div>
+                      <div className="text-xs font-bold flex items-center gap-1.5">
+                        <span>Online</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                          -10€ desconto
+                        </span>
+                      </div>
                       <div className="text-[10px] text-stone-500">Videoconsulta via Google Meet</div>
                     </div>
                   </button>
                 </div>
               </div>
 
-              <div className="pt-3 flex justify-end">
+              {/* Integrated Clinician Reassurance Card */}
+              <div className="p-3.5 sm:p-4 rounded-2xl border border-[#E8D5A0]/90 bg-[#FDFBF7] flex items-center gap-3.5">
+                <img
+                  src={currentSpecialist.photoUrl}
+                  alt={currentSpecialist.name}
+                  className="w-13 h-13 rounded-xl object-cover shrink-0 border-2 border-white shadow-xs"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://usr-cdn.zaask.pt/users/067bf29c16c79c3f951f72f764e2bbdbdfbfab97';
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1 flex-wrap">
+                    <h4 className="text-xs font-bold text-[#2C2822]">{currentSpecialist.name}</h4>
+                    <span className="inline-block text-[10px] font-bold text-[#9A7A2E] bg-[#F5EED8] border border-[#E8D5A0] px-2 py-0.5 rounded-full">
+                      {currentSpecialist.oppNumber}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#2A6496] font-medium mt-0.5">
+                    {currentSpecialist.role} • Mestrado Psicologia Clínica ISPA
+                  </p>
+                  <p className="text-[10px] text-[#6B6560] mt-0.5">
+                    Mais de 15 anos de prática clínica. A sua sessão é conduzida pessoalmente pela Dra. Sofia.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 1 Action */}
+              <div className="pt-2 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setStep(2)}
                   className="px-6 py-2.5 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white text-xs font-semibold shadow-md transition cursor-pointer flex items-center gap-1.5"
                 >
-                  <span>Continuar para Dra. Sofia Cabrita</span>
+                  <span>Continuar para Horários & Vagas</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: SPECIALIST CONFIRMATION */}
+          {/* STEP 2: SCHEDULE & INTERACTIVE BUSY / FREE SLOTS VISUALIZER */}
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <h3 className="text-base font-bold text-stone-900">Psicóloga Clínica Responsável</h3>
-                <p className="text-xs text-stone-500">A sua consulta será conduzida pessoalmente pela Dra. Sofia Godinho Cabrita.</p>
+                <h3 className="text-base font-bold text-[#2C2822]">Escolha o Dia e Horário Disponível</h3>
+                <p className="text-xs text-stone-500">
+                  Consulte a disponibilidade em tempo real da Dra. Sofia Cabrita (fuso horário de Lisboa).
+                </p>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl border border-[#C9A84C] bg-[#FDFBF7] ring-2 ring-[#C9A84C]/20 flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                <img
-                  src={currentSpecialist.photoUrl}
-                  alt={currentSpecialist.name}
-                  className="w-20 h-20 rounded-2xl object-cover shrink-0 shadow-sm border-2 border-white"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://usr-cdn.zaask.pt/users/067bf29c16c79c3f951f72f764e2bbdbdfbfab97';
-                  }}
-                />
-                <div className="flex-1 text-center sm:text-left min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <h4 className="text-base font-bold text-[#2C2822]">{currentSpecialist.name}</h4>
-                    <span className="inline-block text-[11px] font-bold text-[#9A7A2E] bg-[#F5EED8] border border-[#E8D5A0] px-2.5 py-0.5 rounded-full">
-                      {currentSpecialist.oppNumber}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-[#2A6496] mt-0.5">{currentSpecialist.role}</p>
-                  <p className="text-xs text-[#6B6560] mt-2 leading-relaxed">
-                    Mestrado em Psicologia Clínica pelo ISPA. Mais de 15 anos de prática clínica, intervenção em ansiedade, depressão, avaliação psicológica e orientação vocacional.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-1.5 justify-center sm:justify-start">
-                    {currentSpecialist.specialties.map((spec, idx) => (
-                      <span key={idx} className="text-[10px] font-medium bg-white text-stone-700 px-2 py-0.5 rounded border border-stone-200">
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
+              {formError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span className="font-semibold">{formError}</span>
                 </div>
-              </div>
+              )}
 
-              <div className="pt-3 flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="px-4 py-2 rounded-xl text-stone-600 hover:text-stone-900 text-xs font-semibold transition cursor-pointer flex items-center gap-1"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="px-6 py-2.5 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white text-xs font-semibold shadow-md transition cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>Continuar para Data & Horário</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: DATE & TIME */}
-          {step === 3 && (
-            <div className="space-y-5">
+              {/* 7-Day Quick Availability Ribbon */}
               <div>
-                <h3 className="text-base font-bold text-[#2C2822]">Selecione o Dia e Horário</h3>
-                <p className="text-xs text-stone-500">Horários calculados para o fuso horário de Lisboa (WET/WEST).</p>
-              </div>
-
-              {/* Date Input */}
-              <div>
-                <label className="block text-xs font-bold text-[#2C2822] mb-1">
-                  Data da Consulta:
+                <label className="block text-xs font-bold text-[#2C2822] mb-1.5">
+                  Próximos Dias com Vagas:
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => handleDateChange(e.target.value)}
-                    className="w-full text-xs sm:text-sm py-2.5 px-3 rounded-xl border border-stone-300 bg-white focus:ring-2 focus:ring-[#2A6496] focus:outline-none font-medium text-stone-900"
-                  />
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                  {upcomingDays.map((day) => {
+                    const isSelected = selectedDate === day.dateStr;
+                    return (
+                      <button
+                        key={day.dateStr}
+                        type="button"
+                        onClick={() => handleDateChange(day.dateStr)}
+                        className={`p-2 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-between gap-1 ${
+                          isSelected
+                            ? 'border-[#2A6496] bg-[#E8F1F8] ring-2 ring-[#2A6496]/20'
+                            : day.isFullyBooked
+                            ? 'border-stone-200 bg-stone-100/60 opacity-60 text-stone-400'
+                            : 'border-stone-200 bg-white hover:border-[#CD8E33]/60 hover:bg-[#FAF3E7]/40'
+                        }`}
+                      >
+                        <span className="text-[10px] font-bold text-stone-600 uppercase">
+                          {day.dayName}
+                        </span>
+                        <span className={`text-xs font-extrabold ${isSelected ? 'text-[#2A6496]' : 'text-[#2C2822]'}`}>
+                          {day.dayNum}
+                        </span>
+                        <span
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                            day.isFullyBooked
+                              ? 'bg-rose-100 text-rose-800'
+                              : isSelected
+                              ? 'bg-[#2A6496] text-white'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}
+                        >
+                          {day.isFullyBooked ? 'Esgotado' : `${day.freeCount} vagas`}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Available Slots */}
-              <div className="space-y-3">
-                {/* Google Calendar Sync Indicator */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-[#FAF3E7] border border-[#E5B468]/50 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                    </span>
-                    <span className="font-semibold text-stone-800">
-                      Sincronizado com Google Calendar ({currentSpecialist.name.split(' ')[1] || 'Terapeuta'})
-                    </span>
-                  </div>
-                  {/* Visual Legend */}
-                  <div className="flex items-center gap-3 text-[11px] text-stone-600">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                      <span>Livre ({Math.max(0, timeSlots.length - occupiedSlots.length)})</span>
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-rose-400"></span>
-                      <span>Ocupado ({occupiedSlots.length})</span>
-                    </span>
-                  </div>
+              {/* Alternative Date Picker Input */}
+              <div className="bg-[#FDFBF7] p-3.5 rounded-2xl border border-[#E8D5A0]/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-4 h-4 text-[#CD8E33]" />
+                  <span className="text-xs font-semibold text-[#2C2822]">Escolher outra data:</span>
                 </div>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="text-xs sm:text-sm py-1.5 px-3 rounded-xl border border-stone-300 bg-white focus:ring-2 focus:ring-[#2A6496] focus:outline-none font-medium text-stone-900"
+                />
+              </div>
 
-                <div className="flex items-center justify-between pt-1">
-                  <label className="block text-xs font-bold text-[#2C2822]">
-                    Horários para {selectedDate}:
-                  </label>
-                  <span className="text-[11px] font-medium text-stone-500">
-                    {Math.max(0, timeSlots.length - occupiedSlots.length)} de {timeSlots.length} horários livres
-                  </span>
+              {/* Slot Availability Legend & Status */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-2">
+                  <div className="text-xs font-bold text-[#2C2822] flex items-center gap-1.5">
+                    <span>Horários para {selectedDate}:</span>
+                    <span className="text-[11px] font-normal text-stone-500">
+                      ({Math.max(0, timeSlots.length - occupiedSlots.length)} de {timeSlots.length} vagas livres)
+                    </span>
+                  </div>
+
+                  {/* Visual Legend */}
+                  <div className="flex items-center gap-3 text-[10px] font-medium text-stone-600">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>Disponível</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                      <span>Ocupado na Agenda</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#CD8E33]"></span>
+                      <span>Selecionado</span>
+                    </span>
+                  </div>
                 </div>
 
                 {timeSlots.length > 0 && occupiedSlots.length >= timeSlots.length ? (
@@ -511,74 +576,179 @@ export const BookingModal: React.FC = () => {
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       <strong className="block font-semibold">Sem vagas nesta data</strong>
-                      Todos os horários deste dia já se encontram ocupados na agenda de {currentSpecialist.name}. Por favor selecione outra data no calendário acima.
+                      Todos os horários de {selectedDate} já se encontram ocupados na agenda de {currentSpecialist.name}. Por favor selecione outro dia no seletor de datas.
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {timeSlots.map((slot) => {
-                      const isOccupied = occupiedSlots.includes(slot);
-                      const isSelected = selectedTime === slot;
+                  <div className="space-y-3">
+                    {/* Morning Period */}
+                    <div>
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700 mb-1.5">
+                        <Sun className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Período da Manhã (09:00 – 13:00)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {morningSlots.map((slot) => {
+                          const isOccupied = occupiedSlots.includes(slot);
+                          const isSelected = selectedTime === slot;
+                          const endTime = getSlotEndTime(slot, currentService.durationMinutes);
 
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          disabled={isOccupied}
-                          onClick={() => {
-                            if (!isOccupied) {
-                              setSelectedTime(slot);
-                              setFormError(null);
-                            }
-                          }}
-                          className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition text-center flex flex-col items-center justify-center gap-0.5 relative ${
-                            isOccupied
-                              ? 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed opacity-75'
-                              : isSelected
-                              ? 'border-[#CD8E33] bg-[#CD8E33] text-white shadow-xs cursor-pointer'
-                              : 'border-stone-200 bg-white text-stone-700 hover:border-[#CD8E33]/60 hover:bg-[#FAF3E7]/50 cursor-pointer'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <Clock className={`w-3.5 h-3.5 ${isOccupied ? 'text-stone-400' : isSelected ? 'text-white' : 'text-[#CD8E33]'}`} />
-                            <span className={isOccupied ? 'line-through text-stone-400' : ''}>{slot}</span>
-                          </div>
-                          {isOccupied ? (
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
-                              Ocupado
-                            </span>
-                          ) : (
-                            <span className={`text-[9px] font-medium ${isSelected ? 'text-white/90' : 'text-emerald-600'}`}>
-                              Disponível
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                          return (
+                            <button
+                              key={slot}
+                              type="button"
+                              disabled={isOccupied}
+                              onClick={() => {
+                                if (!isOccupied) {
+                                  setSelectedTime(slot);
+                                  setFormError(null);
+                                }
+                              }}
+                              className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition text-center flex items-center justify-between gap-2 relative ${
+                                isOccupied
+                                  ? 'border-rose-200 bg-rose-50/50 text-stone-400 cursor-not-allowed opacity-80'
+                                  : isSelected
+                                  ? 'border-[#CD8E33] bg-[#CD8E33] text-white shadow-xs cursor-pointer ring-2 ring-[#CD8E33]/30'
+                                  : 'border-stone-200 bg-white text-stone-700 hover:border-[#CD8E33]/60 hover:bg-[#FAF3E7]/40 cursor-pointer'
+                              }`}
+                            >
+                              <div className="flex items-center gap-1.5 text-left">
+                                <Clock className={`w-3.5 h-3.5 ${isOccupied ? 'text-rose-300' : isSelected ? 'text-white' : 'text-[#CD8E33]'}`} />
+                                <div>
+                                  <div className={`font-bold ${isOccupied ? 'line-through text-stone-400' : ''}`}>
+                                    {slot}
+                                  </div>
+                                  <div className={`text-[10px] font-normal ${isSelected ? 'text-white/80' : 'text-stone-400'}`}>
+                                    até às {endTime}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {isOccupied ? (
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-100/70 px-1.5 py-0.5 rounded border border-rose-200 shrink-0">
+                                  Ocupado
+                                </span>
+                              ) : isSelected ? (
+                                <span className="text-[10px] font-bold text-white bg-white/20 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                                  <Check className="w-3 h-3" />
+                                  <span>Escolha</span>
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">
+                                  Livre
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Afternoon Period */}
+                    <div>
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700 mb-1.5">
+                        <Sunset className="w-3.5 h-3.5 text-orange-500" />
+                        <span>Período da Tarde / Fim de Dia (14:30 – 20:00)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                        {afternoonSlots.map((slot) => {
+                          const isOccupied = occupiedSlots.includes(slot);
+                          const isSelected = selectedTime === slot;
+                          const endTime = getSlotEndTime(slot, currentService.durationMinutes);
+
+                          return (
+                            <button
+                              key={slot}
+                              type="button"
+                              disabled={isOccupied}
+                              onClick={() => {
+                                if (!isOccupied) {
+                                  setSelectedTime(slot);
+                                  setFormError(null);
+                                }
+                              }}
+                              className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition text-center flex items-center justify-between gap-2 relative ${
+                                isOccupied
+                                  ? 'border-rose-200 bg-rose-50/50 text-stone-400 cursor-not-allowed opacity-80'
+                                  : isSelected
+                                  ? 'border-[#CD8E33] bg-[#CD8E33] text-white shadow-xs cursor-pointer ring-2 ring-[#CD8E33]/30'
+                                  : 'border-stone-200 bg-white text-stone-700 hover:border-[#CD8E33]/60 hover:bg-[#FAF3E7]/40 cursor-pointer'
+                              }`}
+                            >
+                              <div className="flex items-center gap-1.5 text-left">
+                                <Clock className={`w-3.5 h-3.5 ${isOccupied ? 'text-rose-300' : isSelected ? 'text-white' : 'text-[#CD8E33]'}`} />
+                                <div>
+                                  <div className={`font-bold ${isOccupied ? 'line-through text-stone-400' : ''}`}>
+                                    {slot}
+                                  </div>
+                                  <div className={`text-[10px] font-normal ${isSelected ? 'text-white/80' : 'text-stone-400'}`}>
+                                    até às {endTime}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {isOccupied ? (
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-100/70 px-1.5 py-0.5 rounded border border-rose-200 shrink-0">
+                                  Ocupado
+                                </span>
+                              ) : isSelected ? (
+                                <span className="text-[10px] font-bold text-white bg-white/20 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                                  <Check className="w-3 h-3" />
+                                  <span>Escolha</span>
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">
+                                  Livre
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {/* Online Google Meet & Calendar Sync Notification */}
+              {modality === 'online' && (
+                <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl text-xs text-sky-900 flex items-start gap-2.5">
+                  <Video className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block font-semibold">Videoconsulta com Google Meet Integrado</strong>
+                    Será criada automaticamente uma sala de videoconferência segura no Google Meet e enviada para o seu email. A consulta será sincronizada em tempo real com a agenda Google da Dra. Sofia Cabrita.
+                  </div>
+                </div>
+              )}
 
               {/* Summary recap box */}
               <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-600 flex items-center justify-between">
                 <div>
                   <span className="font-bold text-stone-900">{currentService.title}</span>
                   <div className="text-[11px] text-stone-500">
-                    com {currentSpecialist.name} ({modality.toUpperCase()})
+                    com {currentSpecialist.name} ({modality === 'online' ? 'ONLINE • VIDEOCONSULTA' : 'PRESENCIAL'})
                     {selectedTime && (
                       <span className="ml-1 text-[#2A6496] font-semibold">• {selectedTime}</span>
                     )}
                   </div>
                 </div>
-                <div className="text-right font-bold text-[#2A6496]">
-                  €{currentService.priceEur}.00
+                <div className="text-right">
+                  <div className="font-bold text-[#CD8E33] text-sm">
+                    €{effectivePrice}.00
+                  </div>
+                  {modality === 'online' && (
+                    <div className="text-[10px] text-emerald-700 font-semibold">
+                      -10€ desconto online
+                    </div>
+                  )}
                 </div>
               </div>
 
+              {/* Navigation Actions */}
               <div className="pt-3 flex items-center justify-between">
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                   className="px-4 py-2 rounded-xl text-stone-600 hover:text-stone-900 text-xs font-semibold transition cursor-pointer flex items-center gap-1"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -597,8 +767,8 @@ export const BookingModal: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 4: PATIENT DETAILS */}
-          {step === 4 && (
+          {/* STEP 3: PATIENT DETAILS */}
+          {step === 3 && (
             <form onSubmit={handleNextFromClientInfo} className="space-y-4">
               <div>
                 <h3 className="text-base font-bold text-stone-900">Identificação & Contacto</h3>
@@ -697,11 +867,11 @@ export const BookingModal: React.FC = () => {
               <div className="pt-3 flex items-center justify-between">
                 <button
                   type="button"
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(2)}
                   className="px-4 py-2 rounded-xl text-stone-600 hover:text-stone-900 text-xs font-semibold transition cursor-pointer flex items-center gap-1"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar</span>
+                  <span>Voltar aos Horários</span>
                 </button>
 
                 <button
@@ -715,8 +885,8 @@ export const BookingModal: React.FC = () => {
             </form>
           )}
 
-          {/* STEP 5: PAYMENT GATEWAY */}
-          {step === 5 && (
+          {/* STEP 4: PAYMENT GATEWAY */}
+          {step === 4 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-bold text-[#2C2822]">Confirmação & Pagamento</h3>
@@ -726,21 +896,25 @@ export const BookingModal: React.FC = () => {
               </div>
 
               {/* Booking Recap banner */}
-              <div className="bg-[#FDFBF7] p-3 rounded-xl border border-[#E8D5A0]/80 text-xs text-stone-700 flex items-center justify-between">
+              <div className="bg-[#FDFBF7] p-3.5 rounded-xl border border-[#E8D5A0]/80 text-xs text-stone-700 flex items-center justify-between">
                 <div>
                   <span className="font-bold text-[#2C2822]">{currentService.title}</span>
                   <div className="text-[11px] text-stone-500">
-                    {selectedDate} às {selectedTime} • {currentSpecialist.name}
+                    {selectedDate} às {selectedTime} • {currentSpecialist.name} ({modality === 'online' ? 'Videoconsulta' : 'Presencial'})
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-bold text-[#2A6496]">€{currentService.priceEur}.00</div>
-                  <div className="text-[10px] text-stone-400">IVA Isento Art. 9º CIVA</div>
+                  <div className="text-sm font-bold text-[#CD8E33]">€{effectivePrice}.00</div>
+                  {modality === 'online' ? (
+                    <div className="text-[10px] text-emerald-700 font-semibold">-10€ em videoconferência</div>
+                  ) : (
+                    <div className="text-[10px] text-stone-400">IVA Isento Art. 9º CIVA</div>
+                  )}
                 </div>
               </div>
 
               <PaymentGateway
-                amountEur={currentService.priceEur}
+                amountEur={effectivePrice}
                 serviceTitle={currentService.title}
                 selectedMethod={paymentMethod}
                 onMethodChange={setPaymentMethod}
@@ -753,7 +927,7 @@ export const BookingModal: React.FC = () => {
               <div className="pt-2 flex items-center justify-start">
                 <button
                   type="button"
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(3)}
                   className="px-4 py-2 rounded-xl text-stone-600 hover:text-stone-900 text-xs font-semibold transition cursor-pointer flex items-center gap-1"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -763,8 +937,8 @@ export const BookingModal: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 6: SUCCESS & AUTOMATED EMAIL CONFIRMATION */}
-          {step === 6 && confirmedBooking && (
+          {/* STEP 5: SUCCESS & AUTOMATED EMAIL CONFIRMATION */}
+          {step === 5 && confirmedBooking && (
             <div className="text-center space-y-5 py-4">
               <div className="w-16 h-16 rounded-full bg-[#E8F1F8] text-[#2A6496] flex items-center justify-center mx-auto shadow-sm">
                 <CheckCircle2 className="w-10 h-10" />

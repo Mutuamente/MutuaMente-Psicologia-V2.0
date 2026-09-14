@@ -166,7 +166,7 @@ export const SERVICES: Service[] = [
     fullDesc: 'Sessões por videoconferência encriptada com a Dra. Sofia Godinho Cabrita, facilitando o acesso a residentes em qualquer parte de Portugal e no estrangeiro.',
     fullDescEn: 'Encrypted telepsychology sessions conducted by Dr. Sofia Godinho Cabrita for clients worldwide.',
     durationMinutes: 50,
-    priceEur: 65,
+    priceEur: 55,
     targetAudience: 'Adultos e Jovens (Nacional e Internacional)',
     targetAudienceEn: 'Adults & Youths (Worldwide)',
     iconName: 'Video',

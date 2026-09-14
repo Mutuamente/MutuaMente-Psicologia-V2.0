@@ -124,6 +124,9 @@ export interface Booking {
   clinicalNotes?: string;
   emailSent: boolean;
   reminderSent: boolean;
+  calendarEventId?: string;
+  calendarHtmlLink?: string;
+  calendarSynced?: boolean;
 }
 
 export interface EmailNotification {

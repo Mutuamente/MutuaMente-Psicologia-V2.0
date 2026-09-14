@@ -23,7 +23,12 @@ import {
   Lock,
   ShieldCheck,
   EyeOff,
-  Key
+  Key,
+  Video,
+  RefreshCw,
+  Cloud,
+  Check,
+  Unlink
 } from 'lucide-react';
 import { MutuaMenteSymbol } from './MutuaMenteLogo';
 import { useBooking } from '../context/BookingContext';
@@ -46,7 +51,13 @@ export const ClinicalDashboard: React.FC = () => {
     isClinicalAuthenticated,
     authenticateClinical,
     logoutClinical,
-    updateClinicalPassword
+    updateClinicalPassword,
+    isCalendarConnected,
+    calendarUser,
+    isCalendarLoading,
+    connectGoogleCalendar,
+    disconnectGoogleCalendar,
+    syncBookingWithCalendar
   } = useBooking();
 
   const [activeTab, setActiveTab] = useState<'consultas' | 'notificacoes' | 'agenda' | 'configuracoes'>('consultas');
@@ -54,6 +65,8 @@ export const ClinicalDashboard: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('todas');
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [tempNotes, setTempNotes] = useState('');
+  const [syncingBookingId, setSyncingBookingId] = useState<string | null>(null);
+  const [calendarSyncFeedback, setCalendarSyncFeedback] = useState<{ id: string; success: boolean; msg: string } | null>(null);
 
   // Password Access Gate state
   const [passwordInput, setPasswordInput] = useState('');
@@ -194,6 +207,24 @@ export const ClinicalDashboard: React.FC = () => {
 
   const getSpecialistName = (id: string) => {
     return SPECIALISTS.find((sp) => sp.id === id)?.name || id;
+  };
+
+  const handleSyncBooking = async (bookingId: string) => {
+    setSyncingBookingId(bookingId);
+    setCalendarSyncFeedback(null);
+    try {
+      const res = await syncBookingWithCalendar(bookingId);
+      if (res.success) {
+        setCalendarSyncFeedback({ id: bookingId, success: true, msg: 'Sincronizado com o Google Calendar e Meet com sucesso!' });
+      } else {
+        setCalendarSyncFeedback({ id: bookingId, success: false, msg: res.error || 'Erro ao sincronizar com o Google Calendar.' });
+      }
+    } catch (err: any) {
+      setCalendarSyncFeedback({ id: bookingId, success: false, msg: err?.message || 'Falha na sincronização.' });
+    } finally {
+      setSyncingBookingId(null);
+      setTimeout(() => setCalendarSyncFeedback(null), 5000);
+    }
   };
 
   const handleOpenNotes = (booking: Booking) => {
@@ -369,6 +400,112 @@ export const ClinicalDashboard: React.FC = () => {
                 </div>
               </div>
 
+              {/* Google Calendar & Cloud Sync Banner */}
+              <div className="bg-gradient-to-r from-blue-50/90 via-sky-50/70 to-emerald-50/80 rounded-2xl p-4 sm:p-5 border border-blue-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
+                    isCalendarConnected 
+                      ? 'bg-emerald-600 text-white' 
+                      : 'bg-white text-[#2A6496] border border-blue-200'
+                  }`}>
+                    {isCalendarConnected ? (
+                      <Calendar className="w-6 h-6" />
+                    ) : (
+                      <Cloud className="w-6 h-6 text-[#2A6496]" />
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold text-stone-900">
+                        Sincronização Cloud & Google Calendar
+                      </h3>
+                      {isCalendarConnected ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wide px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          <Check className="w-3 h-3 text-emerald-700" />
+                          Conectado em tempo real
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                          <AlertCircle className="w-3 h-3 text-amber-600" />
+                          Desconectado do Google
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-stone-600 mt-1 max-w-2xl leading-relaxed">
+                      {isCalendarConnected ? (
+                        <>
+                          Conta Google ativa: <strong className="text-stone-800 font-semibold">{calendarUser?.email || 'Terapeuta Dra. Sofia'}</strong>. As marcações feitas em qualquer dispositivo ficam guardadas na cloud e entram automaticamente na sua agenda Google com convite e link de <strong>Google Meet</strong> para o utente.
+                        </>
+                      ) : (
+                        <>
+                          Ligue a conta Google da terapeuta para sincronizar automaticamente as consultas da clínica com a sua agenda pessoal e profissional, gerando automaticamente links de videoconferência no <strong>Google Meet</strong> para os pacientes.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+                  {isCalendarConnected ? (
+                    <button
+                      type="button"
+                      disabled={isCalendarLoading}
+                      onClick={() => disconnectGoogleCalendar()}
+                      className="px-3.5 py-2 rounded-xl bg-white hover:bg-stone-100 text-stone-700 hover:text-rose-700 text-xs font-semibold border border-stone-300 transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                      title="Desconectar do Google Calendar"
+                    >
+                      <Unlink className="w-3.5 h-3.5 text-stone-500" />
+                      <span>Desconectar Conta Google</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={isCalendarLoading}
+                      onClick={() => connectGoogleCalendar()}
+                      className="px-4 py-2.5 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white text-xs font-bold shadow-md transition cursor-pointer flex items-center gap-2"
+                    >
+                      {isCalendarLoading ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>A ligar Google...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Calendar className="w-4 h-4 text-[#F5EED8]" />
+                          <span>Ligar Google Calendar da Terapeuta</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Feedback alert */}
+              {calendarSyncFeedback && (
+                <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
+                  calendarSyncFeedback.success 
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
+                    : 'bg-rose-50 border-rose-200 text-rose-900'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {calendarSyncFeedback.success ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    )}
+                    <span>{calendarSyncFeedback.msg}</span>
+                  </div>
+                  <button 
+                    onClick={() => setCalendarSyncFeedback(null)} 
+                    className="text-stone-400 hover:text-stone-600 font-bold ml-2 cursor-pointer"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
               {/* Filters & Search Row */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-stone-50 p-3.5 rounded-2xl border border-stone-200">
                 <div className="relative w-full sm:w-80">
@@ -445,13 +582,63 @@ export const ClinicalDashboard: React.FC = () => {
                               </td>
 
                               <td className="py-3.5 px-4">
-                                <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                                  isOnline 
-                                    ? 'bg-blue-50 text-blue-800 border border-blue-200' 
-                                    : 'bg-[#E8F1F8] text-[#2A6496] border border-[#B0D0EB]'
-                                }`}>
-                                  {isOnline ? 'Online' : 'Presencial'}
-                                </span>
+                                <div className="space-y-1">
+                                  <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                                    isOnline 
+                                      ? 'bg-blue-50 text-blue-800 border border-blue-200' 
+                                      : 'bg-[#E8F1F8] text-[#2A6496] border border-[#B0D0EB]'
+                                  }`}>
+                                    {isOnline ? (
+                                      <>
+                                        <Video className="w-3 h-3 text-blue-600" />
+                                        <span>Online (Meet)</span>
+                                      </>
+                                    ) : (
+                                      <span>Presencial</span>
+                                    )}
+                                  </span>
+
+                                  {/* Google Calendar status & direct links */}
+                                  <div>
+                                    {b.calendarSynced ? (
+                                      <div className="flex items-center gap-1 flex-wrap">
+                                        {b.calendarHtmlLink ? (
+                                          <a
+                                            href={b.calendarHtmlLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-[10px] text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 transition font-medium cursor-pointer"
+                                            title="Abrir no Google Calendar"
+                                          >
+                                            <Calendar className="w-2.5 h-2.5 text-emerald-600" />
+                                            <span>No Calendar</span>
+                                            <ExternalLink className="w-2 h-2" />
+                                          </a>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-medium">
+                                            <Check className="w-2.5 h-2.5" />
+                                            <span>Sincronizado</span>
+                                          </span>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        disabled={syncingBookingId === b.id}
+                                        onClick={() => handleSyncBooking(b.id)}
+                                        className="inline-flex items-center gap-1 text-[10px] text-[#2A6496] hover:text-[#1A4A72] bg-blue-50 hover:bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200 transition font-medium cursor-pointer"
+                                        title="Sincronizar com o Google Calendar e criar Google Meet"
+                                      >
+                                        {syncingBookingId === b.id ? (
+                                          <RefreshCw className="w-2.5 h-2.5 animate-spin text-[#2A6496]" />
+                                        ) : (
+                                          <Calendar className="w-2.5 h-2.5 text-[#2A6496]" />
+                                        )}
+                                        <span>{syncingBookingId === b.id ? 'A sincronizar...' : 'Sincronizar Cal'}</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
                               </td>
 
                               <td className="py-3.5 px-4">
@@ -680,11 +867,56 @@ export const ClinicalDashboard: React.FC = () => {
           {/* TAB 3: AGENDA & CALENDAR */}
           {activeTab === 'agenda' && (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-base font-bold text-stone-900">Agenda Clínica — Dra. Sofia Godinho Cabrita</h3>
-                <p className="text-xs text-stone-500">
-                  Gestão e acompanhamento em tempo real das consultas agendadas presenciais e online (Cédula OPP n.º 15786).
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-bold text-stone-900">Agenda Clínica — Dra. Sofia Godinho Cabrita</h3>
+                  <p className="text-xs text-stone-500">
+                    Gestão e acompanhamento em tempo real das consultas presenciais e online (Cédula OPP n.º 15786).
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://calendar.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-300 text-stone-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-[#2A6496]" />
+                    <span>Abrir Google Calendar</span>
+                    <ExternalLink className="w-3 h-3 text-stone-400" />
+                  </a>
+
+                  {isCalendarConnected ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Sincronização Ativa</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={isCalendarLoading}
+                      onClick={() => connectGoogleCalendar()}
+                      className="px-3 py-2 rounded-xl bg-[#2A6496] hover:bg-[#1A4A72] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Ligar Google Calendar</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Status Alert */}
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex items-start gap-3">
+                <Video className="w-5 h-5 text-[#2A6496] shrink-0 mt-0.5" />
+                <div className="text-xs text-stone-700 space-y-1">
+                  <div className="font-bold text-stone-900">
+                    Videoconsultas & Google Meet Automático
+                  </div>
+                  <p className="text-stone-600">
+                    Cada consulta marcada na modalidade Online cria automaticamente uma sala segura no <strong>Google Meet</strong> vinculada à agenda Google da terapeuta e envia o link direto por email ao paciente.
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -806,6 +1038,74 @@ export const ClinicalDashboard: React.FC = () => {
                 <div className="text-[11px] text-[#2A6496] font-medium flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#2A6496]" />
                   <span>Webhooks ativos: Callback instantâneo de liquidação configurado.</span>
+                </div>
+              </div>
+
+              {/* Google Calendar & Meet Integration Settings */}
+              <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-[#2A6496]" />
+                    <span>Integração Google Calendar & Google Meet</span>
+                  </h4>
+                  <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                    isCalendarConnected 
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                      : 'bg-amber-100 text-amber-800 border border-amber-300'
+                  }`}>
+                    {isCalendarConnected ? 'Conectado' : 'Desconectado'}
+                  </span>
+                </div>
+
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  Permite sincronizar diretamente todas as marcações com a agenda Google da Dra. Sofia Cabrita. Quando um paciente escolhe videoconsulta, é gerada automaticamente uma sala de reunião segura com link do <strong>Google Meet</strong> anexada ao evento e enviada na confirmação.
+                </p>
+
+                <div className="p-3.5 rounded-xl bg-white border border-stone-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div>
+                      <span className="text-stone-500 font-medium block">Conta Google Vinculada</span>
+                      <span className="font-semibold text-stone-900">
+                        {calendarUser ? calendarUser.email : 'Nenhuma conta Google ligada atualmente'}
+                      </span>
+                    </div>
+
+                    <div>
+                      {isCalendarConnected ? (
+                        <button
+                          type="button"
+                          disabled={isCalendarLoading}
+                          onClick={() => disconnectGoogleCalendar()}
+                          className="px-3 py-1.5 rounded-lg border border-stone-300 text-stone-700 hover:text-rose-700 hover:bg-stone-50 text-xs font-medium transition cursor-pointer"
+                        >
+                          Desconectar Google
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={isCalendarLoading}
+                          onClick={() => connectGoogleCalendar()}
+                          className="px-3.5 py-2 rounded-lg bg-[#2A6496] hover:bg-[#1A4A72] text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>Ligar Google Calendar</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-stone-100 pt-2.5 flex items-center justify-between text-[11px] text-stone-500">
+                    <span>Permissões OAuth: Agenda de Eventos (calendar.events) & Google Meet</span>
+                    <a
+                      href="https://calendar.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#2A6496] hover:underline font-medium flex items-center gap-1"
+                    >
+                      <span>Abrir Google Agenda</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
               </div>
 

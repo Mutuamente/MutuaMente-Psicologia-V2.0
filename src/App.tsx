@@ -9,7 +9,6 @@ import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { QuotesSection } from './components/QuotesSection';
 import { ServicesSection } from './components/ServicesSection';
-import { PartnershipsAndPricing } from './components/PartnershipsAndPricing';
 import { WhyTherapySection } from './components/WhyTherapySection';
 import { AboutSection } from './components/AboutSection';
 import { TeamSection } from './components/TeamSection';
@@ -34,7 +33,6 @@ export default function App() {
           <HeroSection />
           <QuotesSection />
           <ServicesSection />
-          <PartnershipsAndPricing />
           <WhyTherapySection />
           <AboutSection />
           <TeamSection />
